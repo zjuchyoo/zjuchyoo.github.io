@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="背成语">
     <meta name="format-detection" content="telephone=no">
-    <title>公考高频成语背诵 iPad版</title>
+    <title>背成语</title>
     <style>
       :root {
         --header-bg: #f1f5f9;
@@ -114,6 +114,29 @@
         -webkit-overflow-scrolling: touch;
       }
 
+      .table-head {
+        position: sticky;
+        top: var(--toolbar-h);
+        z-index: 30;
+        display: grid;
+        grid-template-columns: 70px 190px minmax(500px, 1fr);
+        min-width: 760px;
+        background: var(--header-bg);
+        color: var(--header-text);
+        font-weight: 700;
+      }
+
+      .table-head div {
+        border: 1px solid var(--border);
+        border-bottom: 0;
+        padding: 8px 10px;
+        line-height: 1.45;
+      }
+
+      .table-head div:first-child {
+        text-align: right;
+      }
+
       table {
         width: 100%;
         min-width: 760px;
@@ -133,7 +156,6 @@
         width: auto;
       }
 
-      th,
       td {
         border: 1px solid var(--border);
         padding: 8px 10px;
@@ -141,17 +163,6 @@
         vertical-align: top;
       }
 
-      th {
-        position: sticky;
-        top: var(--toolbar-h);
-        z-index: 20;
-        background: var(--header-bg);
-        color: var(--header-text);
-        text-align: left;
-        font-weight: 700;
-      }
-
-      th:first-child,
       td:first-child {
         text-align: right;
       }
@@ -256,7 +267,8 @@
         }
 
         .app,
-        table {
+        table,
+        .table-head {
           min-width: 700px;
         }
 
@@ -272,7 +284,11 @@
           width: 150px;
         }
 
-        th,
+        .table-head {
+          grid-template-columns: 58px 150px minmax(492px, 1fr);
+        }
+
+        .table-head div,
         td {
           padding: 8px;
         }
@@ -306,19 +322,17 @@
       </header>
 
       <main class="table-wrap">
+        <div class="table-head" role="row">
+          <div role="columnheader">序号</div>
+          <div role="columnheader">词语</div>
+          <div role="columnheader">释义/用法</div>
+        </div>
         <table>
           <colgroup>
             <col class="col-id">
             <col class="col-word">
             <col class="col-meaning">
           </colgroup>
-          <thead>
-            <tr>
-              <th>序号</th>
-              <th>词语</th>
-              <th>释义/用法</th>
-            </tr>
-          </thead>
           <tbody id="idiomBody">
             <tr><td colspan="3" class="loading-cell">正在读取数据...</td></tr>
           </tbody>
