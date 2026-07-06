@@ -5330,9 +5330,11 @@
     <script>
       (() => {
         const STORAGE_KEY = "idiomMemoryMarks.ipad.v1";
+        const CUSTOM_MEANINGS_KEY = "idiomCustomMeanings.ipad.v1";
         const state = {
           idioms: window.IDIOMS_DATA || [],
           marks: loadMarks(),
+          customMeanings: loadCustomMeanings(),
           revealed: new Set(),
           filtered: [],
           activeKey: null,
@@ -5428,10 +5430,23 @@
 
             const meaningCell = document.createElement("td");
             meaningCell.className = `meaning-cell ${state.revealed.has(key) ? "is-visible" : "is-hidden"}`;
-            if (state.revealed.has(key)) meaningCell.textContent = idiom.meaning || "";
+            if (state.revealed.has(key)) meaningCell.textContent = state.customMeanings[key] || idiom.meaning || "";
             meaningCell.addEventListener("click", () => {
               toggleMeaning(key);
               renderRows();
+            });
+            meaningCell.addEventListener("contextmenu", (event) => {
+              event.preventDefault();
+              const currentMeaning = state.customMeanings[key] || idiom.meaning || "";
+              const newMeaning = prompt("编辑释义：", currentMeaning);
+              if (newMeaning !== null) {
+                state.customMeanings[key] = newMeaning.trim();
+                saveCustomMeanings();
+                if (!state.revealed.has(key)) {
+                  toggleMeaning(key);
+                }
+                renderRows();
+              }
             });
 
             row.append(idCell, wordCell, meaningCell);
@@ -5542,6 +5557,20 @@
           } catch (error) {
             // iPad 文件模式如果禁用存储，就只在当前页面里保留标记。
           }
+        }
+
+        function loadCustomMeanings() {
+          try {
+            return JSON.parse(localStorage.getItem(CUSTOM_MEANINGS_KEY)) || {};
+          } catch (error) {
+            return {};
+          }
+        }
+
+        function saveCustomMeanings() {
+          try {
+            localStorage.setItem(CUSTOM_MEANINGS_KEY, JSON.stringify(state.customMeanings));
+          } catch (error) {}
         }
       })();
     </script>
