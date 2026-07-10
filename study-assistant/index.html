@@ -904,6 +904,8 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
 .idiom-swatch-yellow{background:#d8b25f}.idiom-swatch-red{background:#d08c8c}.idiom-swatch-green{background:#8fb398}.idiom-swatch-blue{background:#84aabd}.idiom-swatch-clear{background:linear-gradient(135deg,transparent 42%,#aa8e86 43%,#aa8e86 57%,transparent 58%);border:1px solid rgba(var(--shadow-rgb),.18)}
 /* 桌面紧凑模式：把垂直空间优先留给成语列表。 */
 @media(min-width:821px){
+  /* Dock 缩短后，同步把释放出的高度交还给三个页面的主体。 */
+  .container{height:calc(100vh - 92px)}
   #idiomContainer{max-width:1280px;height:calc(100vh - 92px)}
   .idiom-container .header{padding:13px 22px 8px;gap:10px;flex-wrap:nowrap}
   .idiom-container .brand{gap:11px}
