@@ -905,6 +905,7 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
 /* 桌面紧凑模式：把垂直空间优先留给成语列表。 */
 @media(min-width:821px){
   /* Dock 缩短后，同步把释放出的高度交还给三个页面的主体。 */
+  body{padding-bottom:70px}
   .container{height:calc(100vh - 92px)}
   #idiomContainer{max-width:1280px;height:calc(100vh - 92px)}
   .idiom-container .header{padding:13px 22px 8px;gap:10px;flex-wrap:nowrap}
