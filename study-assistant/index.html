@@ -924,17 +924,6 @@ body{
           <button id="scheduleClearBtn" class="schedule-btn danger ripple" type="button">一键清空</button>
           <button id="scheduleSaveBtn" class="schedule-btn ripple" type="button">保存</button>
         </div>
-        <div class="schedule-action-row">
-          <button id="scheduleImportBtn" class="schedule-btn ripple" type="button">导入示例计划</button>
-          <button id="migrationExportBtn" class="schedule-btn ripple" type="button">导出全部数据</button>
-          <button id="migrationImportBtn" class="schedule-btn ripple" type="button">导入全部数据</button>
-          <input id="migrationImportFile" type="file" accept="application/json,.json" hidden>
-          <button class="schedule-btn schedule-archive-btn ripple" type="button" data-archive-slot="1">导入档案1</button>
-          <button class="schedule-btn schedule-archive-btn ripple" type="button" data-archive-slot="2">导入档案2</button>
-          <button class="schedule-btn schedule-archive-btn ripple" type="button" data-archive-slot="3">导入档案3</button>
-          <button class="schedule-btn schedule-archive-btn ripple" type="button" data-archive-slot="4">导入档案4</button>
-          <button class="schedule-btn schedule-archive-btn ripple" type="button" data-archive-slot="5">导入档案5</button>
-        </div>
       </div>
     </div>
     <div class="schedule-summary">
@@ -1372,7 +1361,7 @@ const examplePlans=[
 ];
 
 const body=$('scheduleBody'),clock=$('scheduleClock'),summary=$('scheduleSummary');
-const addBtn=$('scheduleAddBtn'),importBtn=$('scheduleImportBtn'),clearBtn=$('scheduleClearBtn'),saveBtn=$('scheduleSaveBtn');
+const addBtn=$('scheduleAddBtn'),clearBtn=$('scheduleClearBtn'),saveBtn=$('scheduleSaveBtn');
 const archiveBtns=document.querySelectorAll('.schedule-archive-btn');
 const subTitle=$('todoSubTitle'),topBarFill=$('todoTopBarFill');
 let plans=loadPlans();
@@ -1682,7 +1671,6 @@ addBtn.addEventListener('click',()=>{
   plans.push(createPlan());
   savePlans();render();
 });
-importBtn.addEventListener('click',importExample);
 clearBtn.addEventListener('click',clearAll);
 saveBtn.addEventListener('click',saveArchive);
 archiveBtns.forEach(btn=>{
@@ -1715,122 +1703,6 @@ savePlans();
 updateArchiveButtonStates();
 updateNow();
 setInterval(updateNow,30000);
-})();
-
-/* 临时数据迁移工具：迁移完成后删除本段和对应按钮。 */
-(function(){
-const exportBtn=document.getElementById('migrationExportBtn');
-const importBtn=document.getElementById('migrationImportBtn');
-const fileInput=document.getElementById('migrationImportFile');
-if(!exportBtn||!importBtn||!fileInput)return;
-
-const EXACT_KEYS=new Set([
-  'study-theme',
-  'studyHelper_schedule_plans',
-  'studyPlanTasks.v1',
-  'todoTasks'
-]);
-
-function isStudyAssistantKey(key){
-  return EXACT_KEYS.has(key)||
-    key.indexOf('studyHelper_schedule_archive_')===0||
-    key.indexOf('study_records_')===0;
-}
-
-function collectStudyAssistantData(){
-  const data={};
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    if(isStudyAssistantKey(key))data[key]=localStorage.getItem(key);
-  }
-  return data;
-}
-
-function clearStudyAssistantData(){
-  const keys=[];
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    if(isStudyAssistantKey(key))keys.push(key);
-  }
-  keys.forEach(key=>localStorage.removeItem(key));
-}
-
-function saveData(data){
-  Object.entries(data).forEach(([key,value])=>{
-    if(isStudyAssistantKey(key)&&typeof value==='string')localStorage.setItem(key,value);
-  });
-}
-
-exportBtn.addEventListener('click',()=>{
-  const payload={
-    type:'study-assistant-backup',
-    version:1,
-    exportedAt:new Date().toISOString(),
-    data:collectStudyAssistantData()
-  };
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement('a');
-  const now=new Date();
-  const pad=n=>String(n).padStart(2,'0');
-  link.href=url;
-  link.download='学习助手数据-'+now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'.json';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-  if(typeof showToast==='function')showToast('全部数据已导出');
-});
-
-importBtn.addEventListener('click',()=>{
-  fileInput.value='';
-  fileInput.click();
-});
-
-fileInput.addEventListener('change',async()=>{
-  const file=fileInput.files&&fileInput.files[0];
-  if(!file)return;
-  if(file.size>5*1024*1024){
-    alert('数据文件超过 5MB，已停止导入。');
-    return;
-  }
-
-  let payload;
-  try{
-    payload=JSON.parse(await file.text());
-  }catch(e){
-    alert('无法读取这个 JSON 文件。');
-    return;
-  }
-
-  if(!payload||payload.type!=='study-assistant-backup'||payload.version!==1||!payload.data||typeof payload.data!=='object'||Array.isArray(payload.data)){
-    alert('这不是有效的学习助手数据文件。');
-    return;
-  }
-
-  const imported={};
-  Object.entries(payload.data).forEach(([key,value])=>{
-    if(isStudyAssistantKey(key)&&typeof value==='string')imported[key]=value;
-  });
-  if(!Object.keys(imported).length){
-    alert('数据文件中没有可导入的学习助手数据。');
-    return;
-  }
-
-  if(!confirm('导入会覆盖这个网址当前保存的学习助手数据，确定继续吗？'))return;
-  const previous=collectStudyAssistantData();
-  try{
-    clearStudyAssistantData();
-    saveData(imported);
-  }catch(e){
-    clearStudyAssistantData();
-    saveData(previous);
-    alert('导入失败，原数据已恢复。');
-    return;
-  }
-  alert('导入成功，页面将重新加载。');
-  location.reload();
-});
 })();
 </script>
 </body>
