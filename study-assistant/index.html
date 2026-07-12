@@ -699,9 +699,20 @@ body{
 .schedule-summary span{color:var(--text);font-weight:800;font-variant-numeric:tabular-nums}
 .schedule-dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 10px var(--success)}
 .schedule-main-content{
-  flex:1;min-height:0;overflow:auto;
+  flex:1;min-height:0;overflow-x:auto;overflow-y:scroll;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(var(--primary-rgb),0.45) transparent;
   padding:0 28px 22px;margin-right:-6px;padding-right:22px;
 }
+.schedule-main-content::-webkit-scrollbar{width:8px;height:8px}
+.schedule-main-content::-webkit-scrollbar-track{background:transparent}
+.schedule-main-content::-webkit-scrollbar-thumb{
+  background:rgba(var(--primary-rgb),0.45);
+  border-radius:999px;
+  border:2px solid transparent;
+  background-clip:padding-box;
+}
+.schedule-main-content::-webkit-scrollbar-thumb:hover{background:rgba(var(--primary-rgb),0.65);background-clip:padding-box}
 .schedule-table-wrap{
   min-width:780px;
   background:linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.12) 100%);
