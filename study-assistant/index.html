@@ -6584,6 +6584,21 @@ const body=$('scheduleBody'),clock=$('scheduleClock'),summary=$('scheduleSummary
 const addBtn=$('scheduleAddBtn'),clearBtn=$('scheduleClearBtn'),saveBtn=$('scheduleSaveBtn');
 const archiveBtns=document.querySelectorAll('.schedule-archive-btn');
 const subTitle=$('todoSubTitle'),topBarFill=$('todoTopBarFill');
+if(new URLSearchParams(location.search).get('apply-plan')==='20260712'){
+  localStorage.setItem(SCHEDULE_STORAGE_KEY,JSON.stringify([
+    {time:'10:30 - 12:00',task:'数量',detail:'推进3—4页，刷题并复盘，1h30min',done:false},
+    {time:'12:00 - 13:30',task:'午饭、休息',detail:'吃饭、午休',done:false},
+    {time:'13:30 - 14:15',task:'资料分析',detail:'完成3篇材料并复盘，45min',done:false},
+    {time:'14:20 - 15:20',task:'数量第二块',detail:'推进剩余2—3页，刷题并复盘，1h',done:false},
+    {time:'15:30 - 17:15',task:'政治理论',detail:'完成1个专题，上课+背书，1h45min',done:false},
+    {time:'17:15 - 18:00',task:'言语理解',detail:'推进3—4页，刷题并复盘，45min',done:false},
+    {time:'18:00 - 19:30',task:'晚饭、休息',detail:'吃饭、放松',done:false},
+    {time:'19:30 - 20:30',task:'推理判断',detail:'推进4—5页（类比推理2-3页），刷题并复盘，1h',done:false},
+    {time:'20:40 - 21:40',task:'背成语',detail:'新背40个，复盘以前内容，1h',done:false},
+    {time:'21:40 - 22:00',task:'复盘',detail:'补任务、整理错题',done:false}
+  ]));
+  history.replaceState(null,'',location.pathname+location.hash);
+}
 let plans=loadPlans();
 let sortTimer=null;
 
