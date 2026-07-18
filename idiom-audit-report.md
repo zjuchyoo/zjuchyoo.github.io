@@ -5,8 +5,8 @@
 - 实际数据源：`study-assistant/index.html` 中的 `window.IDIOMS_DATA`
 - 数据规模：995 条，ID 1—995
 - 恢复分支：`backup/idiom-audit-pre-20260719`
-- 数据发布提交：待首次发布提交后补记
-- GitHub Pages 状态：待推送并完成线上验证后补记
+- 数据发布提交：`4c16119200bb03b5604e4957a8b5cf18dff323d5`
+- GitHub Pages 状态：成功，部署环境 `github-pages`
 
 ## 结果
 
@@ -117,4 +117,9 @@ node scripts/validate-idioms.mjs
 
 ## 发布记录
 
-待提交、推送、GitHub Pages 部署和线上抽样验证完成后补记。
+- `main` 已推送数据提交 `4c16119200bb03b5604e4957a8b5cf18dff323d5`。
+- GitHub Actions 的 [pages build and deployment](https://github.com/zjuchyoo/zjuchyoo.github.io/actions/runs/29654962842) 已完成，结论为 `success`；工作流的 `head_sha` 与数据提交完全一致。
+- GitHub deployment ID `5504041002` 的环境为 `github-pages`、分支为 `main`、状态为 `success`，环境地址为 <https://zjuchyoo.github.io/>。
+- 对 <https://zjuchyoo.github.io/study-assistant/> 加提交 SHA 查询参数并发送 `no-cache` 请求，返回 HTTP 200；线上 HTML 的 `Last-Modified` 为 `Sat, 18 Jul 2026 17:59:38 GMT`，可解析 995 条数据，并含 3 组旧存储键迁移。
+- 线上抽查 ID 29、171、204、216、432、509、593、739、855、913，词头和释义均与本地发布数据一致。
+- 在线浏览器实际进入“背成语”，初始渲染 995 行；搜索 `玉石俱焚` 只返回 ID 855，点击后显示“美玉和石头一同烧毁，比喻好坏不分，一同毁灭或受到损害。”
