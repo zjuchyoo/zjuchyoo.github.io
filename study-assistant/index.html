@@ -553,6 +553,14 @@ body{
   box-shadow:0 12px 30px -4px rgba(var(--danger-rgb),0.32),inset 0 1px 1px rgba(255,255,255,0.35);
 }
 .timer-btn:active{transform:translateY(-1px) scale(0.98)}
+.timer-control-region{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.timer-secondary-controls{display:flex;align-items:center;justify-content:center;gap:8px}
+.timer-secondary-controls[hidden]{display:none}
+.timer-secondary-controls .timer-btn{width:108px;height:44px;font-size:13px;letter-spacing:0.8px}
+.timer-btn.pause{color:var(--primary);background:linear-gradient(180deg,rgba(255,255,255,0.38) 0%,rgba(255,255,255,0.16) 100%)}
+.timer-btn.pause:hover{border-color:rgba(var(--primary-rgb),0.42);box-shadow:0 10px 24px -8px rgba(var(--primary-rgb),0.22),inset 0 1px 1px rgba(255,255,255,0.8)}
+.timer-btn.reset{color:var(--danger);background:linear-gradient(180deg,rgba(255,255,255,0.34) 0%,rgba(255,255,255,0.14) 100%)}
+.timer-btn.reset:hover{border-color:rgba(var(--danger-rgb),0.38);background:rgba(var(--danger-rgb),0.14);box-shadow:0 10px 24px -8px rgba(var(--danger-rgb),0.20),inset 0 1px 1px rgba(255,255,255,0.8)}
 
 
 .total-section{
@@ -647,177 +655,83 @@ body{
 }
 
 /* =========================================
-   学习计划特有样式
+   成绩估算特有样式
    ========================================= */
-#todoContainer{max-width:1120px}
-.schedule-toolbar{
-  display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
-  padding:0 28px 16px;flex-wrap:wrap;
-}
-.schedule-clock{
-  font-size:12px;font-weight:600;color:var(--text-secondary);
-  padding:8px 13px;border-radius:999px;
-  background:rgba(255,255,255,0.20);
-  border:1px solid rgba(255,255,255,0.34);
-  font-variant-numeric:tabular-nums;
-}
-.schedule-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-.schedule-action-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.schedule-btn{
-  min-height:38px;padding:0 15px;border:none;border-radius:16px;cursor:pointer;
-  font-size:12px;font-weight:700;color:var(--text);font-family:inherit;
-  background:linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.14) 100%);
-  border:1px solid rgba(255,255,255,0.44);
-  border-top-color:rgba(255,255,255,0.72);
-  box-shadow:0 5px 16px rgba(var(--shadow-rgb),0.06),inset 0 1px 0 rgba(255,255,255,0.55);
-  transition:all 0.28s cubic-bezier(0.16,1,0.3,1);
-}
-.schedule-btn:hover{
-  transform:translateY(-2px);
-  background:linear-gradient(180deg, rgba(255,255,255,0.48) 0%, rgba(255,255,255,0.20) 100%);
-  border-color:rgba(var(--primary-rgb),0.28);
-  box-shadow:0 12px 26px -10px rgba(var(--shadow-rgb),0.15),inset 0 1px 0 rgba(255,255,255,0.65);
-}
-.schedule-btn.primary{
-  color:#fff;background:linear-gradient(135deg,var(--accent-1),var(--accent-3));
-  border-color:rgba(255,255,255,0.38);
-}
-.schedule-btn.danger{color:var(--danger)}
-.schedule-btn.danger:hover{
-  background:rgba(var(--danger-rgb),0.14);
-  border-color:rgba(var(--danger-rgb),0.22);
-}
-.schedule-btn.archive-ready{
-  color:var(--text);
-  background:rgba(var(--success-rgb),0.13);
-  border-color:rgba(var(--success-rgb),0.26);
-}
-.schedule-summary{
+#scoreContainer{max-width:1120px}
+.score-summary{
   display:flex;align-items:center;gap:10px;padding:0 28px 12px;
   font-size:11.5px;color:var(--text-secondary);font-weight:600;
 }
-.schedule-summary span{color:var(--text);font-weight:800;font-variant-numeric:tabular-nums}
-.schedule-dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 10px var(--success)}
-.schedule-main-content{
-  flex:1;min-height:0;overflow-x:auto;overflow-y:scroll;
-  scrollbar-width:thin;
-  scrollbar-color:rgba(var(--primary-rgb),0.45) transparent;
+.score-summary span{color:var(--text);font-weight:800;font-variant-numeric:tabular-nums}
+.score-dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 10px var(--success);flex-shrink:0}
+.score-main-content{
+  flex:1;min-height:0;overflow:hidden;
   padding:0 28px 22px;margin-right:-6px;padding-right:22px;
 }
-.schedule-main-content::-webkit-scrollbar{width:8px;height:8px}
-.schedule-main-content::-webkit-scrollbar-track{background:transparent}
-.schedule-main-content::-webkit-scrollbar-thumb{
-  background:rgba(var(--primary-rgb),0.45);
-  border-radius:999px;
-  border:2px solid transparent;
-  background-clip:padding-box;
-}
-.schedule-main-content::-webkit-scrollbar-thumb:hover{background:rgba(var(--primary-rgb),0.65);background-clip:padding-box}
-.schedule-table-wrap{
-  min-width:780px;
+.score-table-wrap{
+  width:100%;height:100%;min-width:0;overflow:auto;
   background:linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.12) 100%);
   backdrop-filter:blur(22px) saturate(160%);
   -webkit-backdrop-filter:blur(22px) saturate(160%);
   border:1px solid rgba(255,255,255,0.44);
   border-top-color:rgba(255,255,255,0.74);
-  border-radius:22px;overflow:hidden;
+  border-radius:22px;
   box-shadow:0 10px 30px -16px rgba(var(--shadow-rgb),0.16),inset 0 1px 0 rgba(255,255,255,0.55);
 }
-.schedule-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
-.schedule-table th{
+.score-table{width:100%;min-width:760px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.score-table th{
   padding:13px 16px;text-align:left;font-size:13px;font-weight:800;
-  color:var(--text);letter-spacing:0.10em;
+  color:var(--text);letter-spacing:0.08em;white-space:nowrap;
   background:rgba(var(--success-rgb),0.36);
   border-bottom:2px solid rgba(var(--success-rgb),0.50);
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.44),0 6px 16px rgba(var(--shadow-rgb),0.04);
 }
-.schedule-table th:nth-child(1){width:170px}
-.schedule-table th:nth-child(2){width:160px}
-.schedule-table th:nth-child(4){width:76px;text-align:center}
-.schedule-table td{
+.score-table th:nth-child(1){width:150px}
+.score-table th:nth-child(2){width:300px}
+.score-table th:nth-child(3){width:160px}
+.score-table th:nth-child(4){width:170px}
+.score-table td{
   padding:10px 16px;border-bottom:1px solid rgba(var(--shadow-rgb),0.12);
-  vertical-align:middle;font-size:15.5px;color:var(--text);
+  vertical-align:middle;font-size:14px;color:var(--text);line-height:1.4;
   transition:background 0.28s ease,color 0.28s ease,opacity 0.28s ease;
 }
-.schedule-table tbody tr td{background:linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.12) 100%)}
-.schedule-table tr:last-child td{border-bottom:none}
-.schedule-table tr.current td{
-  background:rgba(var(--success-rgb),0.56) !important;
-  border-top:1px solid rgba(var(--success-rgb),0.50);
-  border-bottom:1px solid rgba(var(--success-rgb),0.58);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.24),inset 0 -1px 0 rgba(var(--success-rgb),0.32);
+.score-table tbody tr td,.score-table tfoot tr td{background:linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.12) 100%)}
+.score-table .score-subtotal-row td{background:rgba(var(--success-rgb),0.20);font-weight:700}
+.score-table .score-total-row td{
+  background:rgba(var(--primary-rgb),0.20);border-bottom:none;font-weight:800;
 }
-.schedule-table tr.current td:first-child{
-  box-shadow:inset 7px 0 0 rgba(var(--success-rgb),0.95),inset 0 1px 0 rgba(255,255,255,0.24),inset 0 -1px 0 rgba(var(--success-rgb),0.32);
+.score-table .score-section-cell{font-weight:700;white-space:nowrap}
+.score-table .score-subtype-cell{color:var(--text-secondary);word-break:break-word}
+.score-count-cell,.score-points-cell{font-variant-numeric:tabular-nums;white-space:nowrap}
+.score-count-cell{text-align:center}
+.score-points-cell{text-align:right}
+.score-input{
+  width:70px;height:34px;padding:0 8px;text-align:center;vertical-align:middle;
+  border:1px solid rgba(255,255,255,0.58);border-radius:10px;
+  background:rgba(255,255,255,0.28);color:var(--text);font:inherit;font-size:14px;font-weight:700;
+  outline:none;appearance:textfield;-moz-appearance:textfield;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.65);
+  transition:border-color 0.22s ease,box-shadow 0.22s ease,background 0.22s ease;
 }
-.schedule-delete-cell{text-align:center}
-.schedule-edit{
-  min-height:24px;outline:none;border-radius:10px;padding:4px 6px;
-  line-height:1.35;word-break:break-word;transition:all 0.22s ease;
-}
-.schedule-edit:empty::before{content:attr(data-placeholder);color:var(--text-muted);opacity:0.7}
-.schedule-edit:focus{
-  background:rgba(255,255,255,0.42);
-  box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.08),inset 0 1px 0 rgba(255,255,255,0.55);
-}
-.schedule-time-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.current-tag{
-  display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;
-  background:rgba(255,255,255,0.48);color:var(--text);
-  border:1px solid rgba(var(--success-rgb),0.48);
-  font-size:12px;font-weight:800;white-space:nowrap;
-}
-.schedule-delete{
-  width:30px;height:30px;border:none;border-radius:11px;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,0.22);color:var(--text-muted);
-  border:1px solid rgba(255,255,255,0.32);
-  transition:all 0.25s cubic-bezier(0.16,1,0.3,1);
-}
-.schedule-delete:hover{
-  color:var(--danger);background:rgba(var(--danger-rgb),0.13);
-  border-color:rgba(var(--danger-rgb),0.22);transform:translateY(-2px);
-}
-.schedule-delete svg{width:14px;height:14px}
-.schedule-empty{
-  padding:30px 16px;text-align:center;color:var(--text-muted);
-  font-size:12px;font-style:italic;
-}
+.score-input::-webkit-outer-spin-button,.score-input::-webkit-inner-spin-button{margin:0;appearance:none}
+.score-input::placeholder{color:var(--text-muted);opacity:0.85}
+.score-input:focus{border-color:rgba(var(--primary-rgb),0.58);background:rgba(255,255,255,0.46);box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.10),inset 0 1px 0 rgba(255,255,255,0.8)}
+.score-earned,.score-subtotal-output,.score-total-output{display:inline-block;min-width:3.2em;text-align:right;font-weight:800;color:var(--text)}
+.score-fraction{color:var(--text-secondary);font-weight:600}
 
-/* 学习计划响应式 */
+/* 成绩估算响应式 */
 @media(max-width:760px){
-  #todoContainer{max-width:760px}
-  .schedule-toolbar{padding:0 20px 12px;align-items:stretch}
-  .schedule-clock{width:100%;text-align:center}
-  .schedule-actions{width:100%;align-items:stretch}
-  .schedule-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .schedule-btn{padding:0 10px}
-  .schedule-summary{padding:0 20px 10px}
-  .schedule-main-content{padding:0 20px 18px;margin-right:0}
-  .schedule-table-wrap{min-width:0;background:transparent;border:none;box-shadow:none;overflow:visible}
-  .schedule-table,.schedule-table tbody,.schedule-table tr,.schedule-table td{display:block;width:100%}
-  .schedule-table thead{display:none}
-  .schedule-table tr{
-    margin-bottom:10px;padding:13px 14px 12px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.13) 100%);
-    border:1px solid rgba(255,255,255,0.44);
-    border-top-color:rgba(255,255,255,0.74);
-    border-radius:18px;box-shadow:0 6px 18px rgba(var(--shadow-rgb),0.06),inset 0 1px 0 rgba(255,255,255,0.55);
-  }
-  .schedule-table tbody tr{background:linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.12) 100%)}
-  .schedule-table tr.current{background:rgba(var(--success-rgb),0.56);box-shadow:inset 7px 0 0 rgba(var(--success-rgb),0.95)}
-  .schedule-table tbody tr.current{background:rgba(var(--success-rgb),0.56)}
-  .schedule-table tr.current td{background:transparent;box-shadow:none}
-  .schedule-table td{
-    padding:8px 0;border-bottom:none;display:grid;grid-template-columns:74px 1fr;gap:10px;
-  }
-  .schedule-table td::before{
-    content:attr(data-label);font-size:10.5px;font-weight:800;color:var(--text-secondary);
-    letter-spacing:0.08em;padding-top:6px;
-  }
-  .schedule-delete-cell{text-align:left}
-  .schedule-delete-cell::before{padding-top:0}
-  .schedule-delete-cell{display:flex!important;align-items:center;gap:10px;justify-content:flex-start}
+  #scoreContainer{max-width:760px}
+  .score-summary{padding:0 20px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .score-main-content{padding:0 20px 18px;margin-right:0}
+  .score-table-wrap{border-radius:18px}
+  .score-table{min-width:760px}
+  .score-table th{padding:11px 12px;font-size:12px}
+  .score-table td{padding:9px 12px;font-size:13px}
+  .score-table th:nth-child(1){width:140px}
+  .score-table th:nth-child(2){width:290px}
+  .score-table th:nth-child(3){width:155px}
+  .score-table th:nth-child(4){width:165px}
 }
 
 
@@ -913,9 +827,9 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
   .timer-section{flex:1;display:flex;flex-direction:column;justify-content:center}
   .records-section{padding:10px 12px;border:1px solid rgba(255,255,255,.45);border-top-color:rgba(255,255,255,.8);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.12));box-shadow:0 4px 14px rgba(var(--shadow-rgb),.05),inset 0 1px 1px rgba(255,255,255,.6)}
   .records-list .empty-state{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .schedule-main-content{display:block}
-  .schedule-table-wrap{flex:0 0 auto;min-height:100%;display:block}
-  .schedule-table{height:auto}
+  .score-main-content{display:flex}
+  .score-table-wrap{flex:1;min-height:100%;display:flex;flex-direction:column}
+  .score-table{height:100%}
   #idiomContainer{max-width:1320px;height:calc(100vh - 92px)}
   .idiom-toolbar{margin:10px 18px 8px;padding:8px 10px;border-radius:17px}
   .idiom-control-grid{grid-template-columns:42px minmax(300px,1fr) minmax(130px,180px) auto;gap:8px;align-items:center}
@@ -1036,9 +950,15 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
         </div>
         <div class="timer-section">
           <div class="timer-display-wrap digit-scroller-group" id="timerDisplay"></div>
-          <div class="timer-btn-wrap">
-            <div class="timer-btn-breathe" id="timerBtnBreathe"></div>
-            <button class="timer-btn start" id="timerBtn">计时</button>
+          <div class="timer-control-region">
+            <div class="timer-btn-wrap">
+              <div class="timer-btn-breathe" id="timerBtnBreathe"></div>
+              <button class="timer-btn start" id="timerBtn" type="button">计时</button>
+            </div>
+            <div class="timer-secondary-controls" id="timerSecondaryControls" hidden>
+              <button class="timer-btn pause" id="timerPauseBtn" type="button">暂停</button>
+              <button class="timer-btn reset" id="timerResetBtn" type="button">复位</button>
+            </div>
           </div>
         </div>
         <div class="total-section">
@@ -1065,42 +985,99 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
   </div>
 </div>
 
-<!-- ========== 学习计划视图 ========== -->
-<div class="view" id="todoView">
-  <div class="container" id="todoContainer">
-    <div class="top-bar"><div class="top-bar-fill" id="todoTopBarFill"></div></div>
+<!-- ========== 成绩估算视图 ========== -->
+<div class="view" id="scoreView">
+  <div class="container" id="scoreContainer">
+    <div class="top-bar"><div class="top-bar-fill" id="scoreTopBarFill"></div></div>
     <div class="header">
       <div class="brand">
-        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
-        <div class="brand-text"><h1>学习计划</h1><p id="todoSubTitle">按时间推进，逐项完成</p></div>
+        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h17"/><path d="m7 15 3-4 3 2 5-7"/><path d="M18 6h2v2"/></svg></div>
+        <div class="brand-text"><h1>成绩估算</h1><p id="scoreSubTitle">浙江行测总分 / 100</p></div>
       </div>
     </div>
-    <div class="schedule-toolbar">
-      <div class="schedule-clock" id="scheduleClock">当前时间：--:--</div>
-      <div class="schedule-actions">
-        <div class="schedule-action-row">
-          <button id="scheduleAddBtn" class="schedule-btn primary ripple" type="button">添加一行</button>
-          <button id="scheduleClearBtn" class="schedule-btn danger ripple" type="button">一键清空</button>
-          <button id="scheduleSaveBtn" class="schedule-btn ripple" type="button">保存</button>
-        </div>
-      </div>
+    <div class="score-summary" aria-live="polite">
+      <div class="score-dot"></div>
+      <div>已录入 <span id="scoreSummaryCorrect">0</span> / 120 题 · 估算 <span id="scoreSummaryPoints">0</span> / 100 分</div>
     </div>
-    <div class="schedule-summary">
-      <div class="schedule-dot"></div>
-      <div id="scheduleSummary">共 <span>0</span> 项，按时间顺序显示</div>
-    </div>
-    <div class="schedule-main-content" id="scheduleMainContent">
-      <div class="schedule-table-wrap">
-        <table class="schedule-table" aria-label="学习计划表">
+    <div class="score-main-content" id="scoreMainContent">
+      <div class="score-table-wrap">
+        <table class="score-table" aria-label="成绩估算表">
           <thead>
             <tr>
-              <th>时间</th>
-              <th>任务</th>
-              <th>具体安排</th>
-              <th>操作</th>
+              <th>大题型</th>
+              <th>小题型</th>
+              <th>正确题数/总题数</th>
+              <th>模块得分/模块总分</th>
             </tr>
           </thead>
-          <tbody id="scheduleBody"></tbody>
+          <tbody>
+            <tr class="score-data-row" data-score-row data-section="politics" data-total="10" data-rate="0.65" data-max-score="6.5">
+              <td class="score-section-cell">政治理论</td>
+              <td class="score-subtype-cell">政治理论、时政政策</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="政治理论正确题数"><span class="score-fraction"> / 10</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 6.5</span></td>
+            </tr>
+            <tr class="score-data-row" data-score-row data-section="common" data-total="10" data-rate="0.65" data-max-score="6.5">
+              <td class="score-section-cell">常识判断</td>
+              <td class="score-subtype-cell">法律、经济、科技、人文等</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="常识判断正确题数"><span class="score-fraction"> / 10</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 6.5</span></td>
+            </tr>
+            <tr class="score-data-row" data-score-row data-section="language" data-total="25" data-rate="0.8" data-max-score="20">
+              <td class="score-section-cell">言语理解</td>
+              <td class="score-subtype-cell">逻辑填空、片段阅读、语句表达等</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="25" step="1" inputmode="numeric" autocomplete="off" aria-label="言语理解正确题数"><span class="score-fraction"> / 25</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 20</span></td>
+            </tr>
+            <tr class="score-data-row" data-score-row data-section="quantity" data-total="20" data-rate="1" data-max-score="20">
+              <td class="score-section-cell">数量关系</td>
+              <td class="score-subtype-cell">数学运算</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="20" step="1" inputmode="numeric" autocomplete="off" aria-label="数量关系正确题数"><span class="score-fraction"> / 20</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 20</span></td>
+            </tr>
+            <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.75" data-max-score="7.5">
+              <td class="score-section-cell">判断推理</td>
+              <td class="score-subtype-cell">图形推理</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="图形推理正确题数"><span class="score-fraction"> / 10</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 7.5</span></td>
+            </tr>
+            <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.8" data-max-score="8">
+              <td class="score-section-cell">判断推理</td>
+              <td class="score-subtype-cell">定义判断</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="定义判断正确题数"><span class="score-fraction"> / 10</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 8</span></td>
+            </tr>
+            <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.75" data-max-score="7.5">
+              <td class="score-section-cell">判断推理</td>
+              <td class="score-subtype-cell">类比推理</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="类比推理正确题数"><span class="score-fraction"> / 10</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 7.5</span></td>
+            </tr>
+            <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.9" data-max-score="9">
+              <td class="score-section-cell">判断推理</td>
+              <td class="score-subtype-cell">逻辑判断</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="逻辑判断正确题数"><span class="score-fraction"> / 10</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 9</span></td>
+            </tr>
+            <tr class="score-subtotal-row" data-score-subtotal="judgement">
+              <td class="score-section-cell">判断推理</td>
+              <td class="score-subtype-cell">合计</td>
+              <td class="score-count-cell"><output id="judgementCorrect" class="score-subtotal-output">0</output><span class="score-fraction"> / 40</span></td>
+              <td class="score-points-cell"><output id="judgementScore" class="score-subtotal-output">0</output><span class="score-fraction"> / 32</span></td>
+            </tr>
+            <tr class="score-data-row" data-score-row data-section="data" data-total="15" data-rate="1" data-max-score="15">
+              <td class="score-section-cell">资料分析</td>
+              <td class="score-subtype-cell">计算、比较、综合判断</td>
+              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="15" step="1" inputmode="numeric" autocomplete="off" aria-label="资料分析正确题数"><span class="score-fraction"> / 15</span></td>
+              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 15</span></td>
+            </tr>
+            <tr class="score-total-row">
+              <td class="score-section-cell">合计</td>
+              <td class="score-subtype-cell"></td>
+              <td class="score-count-cell"><output id="scoreTotalCorrect" class="score-total-output">0</output><span class="score-fraction"> / 120</span></td>
+              <td class="score-points-cell"><output id="scoreTotalPoints" class="score-total-output">0</output><span class="score-fraction"> / 100</span></td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -1161,9 +1138,9 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     <span>专注计时</span>
   </button>
-  <button class="nav-item" data-view="todoView" id="navTodo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-    <span>学习计划</span>
+  <button class="nav-item" data-view="scoreView" id="navScore">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h17"/><path d="m7 15 3-4 3 2 5-7"/><path d="M18 6h2v2"/></svg>
+    <span>成绩估算</span>
   </button>
 
   <button class="nav-item" data-view="idiomView" id="navIdiom">
@@ -6359,7 +6336,6 @@ document.querySelectorAll('.nav-item').forEach(btn=>{
       if(nextContainer){
         setTimeout(()=>nextContainer.classList.remove('entering'),450);
       }
-      if(viewId==='todoView'){ setTimeout(()=>{ if(typeof window.updateSlider==='function')window.updateSlider(); },50); }
       if(viewId==='idiomView'){ setTimeout(()=>{ if(typeof window.idiomAppRefresh==='function')window.idiomAppRefresh(); },50); }
     },180);
   });
@@ -6412,6 +6388,7 @@ class DigitScroller {
 }
 
 const dateText=$('dateText'),timerBtn=$('timerBtn'),timerBtnBreathe=$('timerBtnBreathe');
+const timerPauseBtn=$('timerPauseBtn'),timerResetBtn=$('timerResetBtn'),timerSecondaryControls=$('timerSecondaryControls');
 const totalText=$('totalText'),recordsList=$('recordsList');
 const addBtn=$('timerAddBtn'),modalOverlay=$('timerModalOverlay'),modalStartH=$('modalStartH'),modalStartM=$('modalStartM');
 const modalEndH=$('modalEndH'),modalEndM=$('modalEndM'),modalConfirm=$('modalConfirm'),modalCancel=$('modalCancel');
@@ -6422,11 +6399,56 @@ const subTitle=$('timerSubTitle');
 const clockScroller=new DigitScroller('clockText');
 const timerScroller=new DigitScroller('timerDisplay');
 
-let records=loadRecords();let timerInterval=null;let timerStart=null;let elapsed=0;let isRunning=false;let contextTargetIndex=-1;
+let records=loadRecords();let timerInterval=null;let timerStart=null;let timerStartedAt=null;let elapsed=0;let isRunning=false;let isPaused=false;let contextTargetIndex=-1;
 
 function updateClock(){const now=new Date();dateText.textContent=formatFullDate(now);clockScroller.update(now.getHours(),now.getMinutes(),now.getSeconds());}
 function updateTimerDisplay(){
-  const total=elapsed+(isRunning&&timerStart?Math.floor((Date.now()-timerStart)/1000):0);const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;timerScroller.update(h,m,s);
+  const runningSeconds=isRunning&&timerStart?Math.floor((Date.now()-timerStart)/1000):0;
+  const total=Math.max(0,elapsed+runningSeconds);const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;timerScroller.update(h,m,s);
+}
+function startTimerInterval(){if(timerInterval===null)timerInterval=setInterval(updateTimerDisplay,100);}
+function stopTimerInterval(){if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null;}}
+function freezeRunningTime(){
+  if(!isRunning||!timerStart)return;
+  elapsed+=Math.max(0,Math.floor((Date.now()-timerStart)/1000));
+  timerStart=null;
+}
+function updateTimerControls(){
+  const hasSession=isRunning||isPaused;
+  timerSecondaryControls.hidden=!hasSession;
+  timerPauseBtn.textContent=isPaused?'继续':'暂停';
+  timerBtn.textContent=hasSession?'停止':'计时';
+  timerBtn.className='timer-btn '+(hasSession?'stop':'start');
+  timerBtnBreathe.classList.toggle('active',isRunning);
+}
+function beginTimer(){
+  if(isRunning)return;
+  if(!isPaused){elapsed=0;timerStartedAt=Date.now();}
+  timerStart=Date.now();isRunning=true;
+  updateTimerControls();updateTimerDisplay();startTimerInterval();
+}
+function pauseTimer(){
+  if(!isRunning)return;
+  freezeRunningTime();isRunning=false;isPaused=true;stopTimerInterval();
+  updateTimerControls();updateTimerDisplay();
+}
+function resumeTimer(){
+  if(!isPaused)return;
+  timerStart=Date.now();isRunning=true;isPaused=false;
+  updateTimerControls();updateTimerDisplay();startTimerInterval();
+}
+function completeTimer(){
+  if(!isRunning&&!isPaused)return;
+  freezeRunningTime();
+  const endTime=new Date();const startTime=new Date(timerStartedAt||endTime);
+  records.unshift({start:formatTimeHM(startTime),end:formatTimeHM(endTime),duration:elapsed});
+  saveRecords(records);renderRecords();
+  stopTimerInterval();timerStart=null;timerStartedAt=null;elapsed=0;isRunning=false;isPaused=false;
+  timerScroller.reset();updateTimerControls();
+}
+function resetTimer(){
+  stopTimerInterval();timerStart=null;timerStartedAt=null;elapsed=0;isRunning=false;isPaused=false;
+  timerScroller.reset();updateTimerControls();
 }
 function updateTotal(){
   const totalSeconds=records.reduce((sum,r)=>sum+r.duration,0);
@@ -6462,22 +6484,11 @@ function renderRecords(){
 }
 
 timerBtn.addEventListener('click',()=>{
-  if(!isRunning){
-    isRunning=true;timerStart=Date.now();
-    timerBtn.textContent='停止';timerBtn.className='timer-btn stop';
-    timerBtnBreathe.classList.add('active');
-    timerInterval=setInterval(updateTimerDisplay,100);
-  }else{
-    isRunning=false;clearInterval(timerInterval);
-    timerBtnBreathe.classList.remove('active');
-    const added=Math.floor((Date.now()-timerStart)/1000);
-    const endTime=new Date();const startTime=new Date(timerStart);
-    records.unshift({start:formatTimeHM(startTime),end:formatTimeHM(endTime),duration:added});
-    saveRecords(records);renderRecords();
-    elapsed=0;timerStart=null;timerScroller.reset();
-    timerBtn.textContent='计时';timerBtn.className='timer-btn start';
-  }
+  if(!isRunning&&!isPaused)beginTimer();
+  else completeTimer();
 });
+timerPauseBtn.addEventListener('click',()=>{if(isRunning)pauseTimer();else if(isPaused)resumeTimer();});
+timerResetBtn.addEventListener('click',resetTimer);
 
 for(let i=0;i<24;i++){const opt=document.createElement('option');opt.value=i;opt.textContent=pad(i);modalStartH.appendChild(opt.cloneNode(true));modalEndH.appendChild(opt.cloneNode(true));}
 for(let i=0;i<60;i++){const opt=document.createElement('option');opt.value=i;opt.textContent=pad(i);modalStartM.appendChild(opt.cloneNode(true));modalEndM.appendChild(opt.cloneNode(true));}
@@ -6509,391 +6520,72 @@ document.addEventListener('click',()=>{$('timerContextMenu').style.display='none
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===document.body){e.preventDefault();timerBtn.click();}});
 
 /* 初始化 */
-setInterval(updateClock,1000);updateClock();renderRecords();
+setInterval(updateClock,1000);updateClock();renderRecords();updateTimerControls();
 const initContainer=document.querySelector('.view.active .container');
 if(initContainer){initContainer.classList.add('entering');setTimeout(()=>initContainer.classList.remove('entering'),450);}
 
 })();
 
 /* =========================================
-   学习计划 IIFE
+   成绩估算 IIFE
    ========================================= */
 (function(){
-const $=id=>document.getElementById(id);
+const rows=[...document.querySelectorAll('[data-score-row]')];
+const judgementCorrect=document.getElementById('judgementCorrect');
+const judgementScore=document.getElementById('judgementScore');
+const totalCorrect=document.getElementById('scoreTotalCorrect');
+const totalPoints=document.getElementById('scoreTotalPoints');
+const summaryCorrect=document.getElementById('scoreSummaryCorrect');
+const summaryPoints=document.getElementById('scoreSummaryPoints');
+const topBarFill=document.getElementById('scoreTopBarFill');
+if(!rows.length||!judgementCorrect||!judgementScore||!totalCorrect||!totalPoints)return;
 
-// 新学习计划 key。清空和保存只操作这个 key，不碰专注计时数据。
-const SCHEDULE_STORAGE_KEY='studyHelper_schedule_plans';
-// 学习计划档案 key：studyHelper_schedule_archive_1 到 studyHelper_schedule_archive_5。
-const SCHEDULE_ARCHIVE_KEY_PREFIX='studyHelper_schedule_archive_';
-const SCHEDULE_ARCHIVE_COUNT=5;
-// 旧版“今日学习计划”单页使用的 key。只读兼容，不自动删除，方便回滚。
-const OLD_STANDALONE_PLAN_KEY='studyPlanTasks.v1';
-// 原项目旧任务清单 key。只在没有学习计划数据时兜底读取并转换。
-const OLD_TODO_KEY='todoTasks';
-
-const examplePlans=[
-  ['10:00 - 10:15','热身','复习昨天成语 10 个 + 看昨天错题关键词'],
-  ['10:15 - 11:35','言语刷题','逻辑填空/成语 50题，限时做'],
-  ['11:35 - 11:50','休息','走动、喝水'],
-  ['11:50 - 12:30','言语订正','只订正错题和犹豫题，整理 5-8 个成语'],
-  ['12:30 - 13:30','午饭休息','可以眯 15-20 分钟'],
-  ['13:30 - 14:10','成语积累','新成语 15-20 个，重点记搭配对象和近义辨析'],
-  ['14:10 - 15:30','资料分析','2 组材料，20题左右，限时做'],
-  ['15:30 - 15:45','休息','洗脸、走动'],
-  ['15:45 - 16:25','资料订正','整理找数慢、列式错、估算错'],
-  ['16:25 - 17:40','推理刷题','图推 20 + 定义 15 + 类比 15，合计 50题'],
-  ['17:40 - 18:10','推理订正','每类挑典型错题整理'],
-  ['18:10 - 19:10','晚饭休息','不学习，恢复脑子'],
-  ['19:10 - 19:45','政治理论','背一个小专题，比如两个维护、新发展理念、中国式现代化'],
-  ['19:45 - 20:25','言语二刷','片段阅读/语句表达 30题'],
-  ['20:25 - 20:40','休息','别躺床'],
-  ['20:40 - 21:25','混合限时练','言语 15 + 推理 15 + 资料 5，合计 35题'],
-  ['21:25 - 22:00','总订正','整理今天最值得记的错题，不超过 10 道']
-];
-
-const body=$('scheduleBody'),clock=$('scheduleClock'),summary=$('scheduleSummary');
-const addBtn=$('scheduleAddBtn'),clearBtn=$('scheduleClearBtn'),saveBtn=$('scheduleSaveBtn');
-const archiveBtns=document.querySelectorAll('.schedule-archive-btn');
-const subTitle=$('todoSubTitle'),topBarFill=$('todoTopBarFill');
-let plans=loadPlans();
-let sortTimer=null;
-
-function makeId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
-function createPlan(time='',task='',detail='',done=false){return {id:makeId(),time,task,detail,done:Boolean(done)};}
-function hasContent(plan){return Boolean(plan.time.trim()||plan.task.trim()||plan.detail.trim());}
-function esc(text){const d=document.createElement('div');d.textContent=text||'';return d.innerHTML;}
-
-function normalizePlan(item){
-  return createPlan(
-    item.time||'',
-    item.task||item.title||item.text||'',
-    item.detail||'',
-    Boolean(item.done||item.completed)
-  );
+function formatScore(value){
+  const rounded=Math.round((Number(value)+Number.EPSILON)*100)/100;
+  return rounded.toFixed(2).replace(/\.?0+$/,'');
 }
 
-function normalizeList(list){
-  if(!Array.isArray(list))return [];
-  return list.map(normalizePlan);
-}
-
-function parseJson(raw){
-  if(raw===null)return null;
-  try{return JSON.parse(raw);}catch(e){return null;}
-}
-
-function loadPlans(){
-  const current=parseJson(localStorage.getItem(SCHEDULE_STORAGE_KEY));
-  if(Array.isArray(current)){
-    const normalized=normalizeList(current);
-    return normalized.length?normalized:[createPlan()];
+function readCorrect(input){
+  const raw=input.value.trim();
+  if(raw==='')return 0;
+  const parsed=Number(raw),max=Number(input.max);
+  if(!Number.isFinite(parsed)){
+    input.value='';
+    return 0;
   }
-
-  const oldStandalone=parseJson(localStorage.getItem(OLD_STANDALONE_PLAN_KEY));
-  if(Array.isArray(oldStandalone)&&oldStandalone.length){
-    const migrated=normalizeList(oldStandalone);
-    localStorage.setItem(SCHEDULE_STORAGE_KEY,JSON.stringify(migrated));
-    showToast('已兼容旧版学习计划数据');
-    return migrated;
-  }
-
-  const oldTodo=parseJson(localStorage.getItem(OLD_TODO_KEY));
-  if(Array.isArray(oldTodo)&&oldTodo.length){
-    const migrated=oldTodo.map(item=>createPlan('',item.text||item.task||'',item.detail||'',Boolean(item.completed||item.done)));
-    localStorage.setItem(SCHEDULE_STORAGE_KEY,JSON.stringify(migrated));
-    showToast('已把旧任务清单转成学习计划');
-    return migrated;
-  }
-
-  return [createPlan()];
+  const normalized=Math.min(max,Math.max(0,Math.trunc(parsed)));
+  if(input.value!==String(normalized))input.value=String(normalized);
+  return normalized;
 }
 
-function savePlans(){
-  localStorage.setItem(SCHEDULE_STORAGE_KEY,JSON.stringify(plans));
-}
-
-function archiveKey(slot){return SCHEDULE_ARCHIVE_KEY_PREFIX+slot;}
-
-function cleanPlansForStorage(list){
-  return list.map(plan=>({
-    time:plan.time||'',
-    task:plan.task||'',
-    detail:plan.detail||'',
-    done:Boolean(plan.done)
-  }));
-}
-
-function readArchive(slot){
-  const raw=parseJson(localStorage.getItem(archiveKey(slot)));
-  if(!Array.isArray(raw))return null;
-  return normalizeList(raw);
-}
-
-function updateArchiveButtonStates(){
-  archiveBtns.forEach(btn=>{
-    const slot=btn.dataset.archiveSlot;
-    const hasArchive=Boolean(localStorage.getItem(archiveKey(slot)));
-    btn.classList.toggle('archive-ready',hasArchive);
-    btn.title=hasArchive?'导入已保存的档案'+slot:'档案'+slot+'还没有保存内容';
-  });
-}
-
-function parseTimeRange(value){
-  const match=String(value||'').trim().match(/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/);
-  if(!match)return null;
-  const sh=Number(match[1]),sm=Number(match[2]),eh=Number(match[3]),em=Number(match[4]);
-  if(sh>23||eh>23||sm>59||em>59)return null;
-  const start=sh*60+sm,end=eh*60+em;
-  if(end<=start)return null;
-  return {start,end};
-}
-
-function sortPlans(){
-  plans.sort((a,b)=>{
-    const ta=parseTimeRange(a.time),tb=parseTimeRange(b.time);
-    if(!ta&&!tb)return 0;
-    if(!ta)return 1;
-    if(!tb)return -1;
-    return ta.start-tb.start;
-  });
-}
-
-function nowMinutes(){const d=new Date();return d.getHours()*60+d.getMinutes();}
-function getCurrentPlanIndex(){
-  const currentMinute=nowMinutes();
-  return plans.findIndex(plan=>{
-    const range=parseTimeRange(plan.time);
-    return range&&currentMinute>=range.start&&currentMinute<range.end;
-  });
-}
-
-function scrollCurrentPlanIntoView(){
-  const index=getCurrentPlanIndex();
-  if(index<0)return;
-  requestAnimationFrame(()=>{
-    const row=body.querySelector('tr.current');
-    if(row)row.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});
-  });
-}
-function updateClockText(){
-  const d=new Date();
-  clock.textContent='当前时间：'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-}
-
-function getCaretOffset(el){
-  const sel=window.getSelection();
-  if(!sel.rangeCount)return 0;
-  const range=sel.getRangeAt(0),copy=range.cloneRange();
-  copy.selectNodeContents(el);copy.setEnd(range.endContainer,range.endOffset);
-  return copy.toString().length;
-}
-
-function setCaretOffset(el,offset){
-  const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
-  let node,count=0;
-  while((node=walker.nextNode())){
-    const next=count+node.nodeValue.length;
-    if(offset<=next){
-      const range=document.createRange(),sel=window.getSelection();
-      range.setStart(node,Math.max(0,offset-count));range.collapse(true);
-      sel.removeAllRanges();sel.addRange(range);return;
+function updateScores(){
+  let allCorrect=0,allPoints=0,judgementQuestions=0,judgementPoints=0;
+  rows.forEach(row=>{
+    const input=row.querySelector('.score-input');
+    const correct=readCorrect(input);
+    const points=correct*Number(row.dataset.rate);
+    row.querySelector('.score-earned').textContent=formatScore(points);
+    allCorrect+=correct;allPoints+=points;
+    if(row.dataset.section==='judgement'){
+      judgementQuestions+=correct;judgementPoints+=points;
     }
-    count=next;
-  }
-  el.focus();
-}
-
-function meaningfulPlans(){return plans.filter(hasContent);}
-
-function updateProgress(){
-  const real=meaningfulPlans();
-  const total=real.length;
-  summary.innerHTML='共 <span>'+total+'</span> 项，按时间顺序显示';
-  topBarFill.style.width='0%';
-  if(total===0)subTitle.textContent='按时间推进，逐项完成';
-  else subTitle.textContent='按时间推进，逐项完成';
-}
-
-function render(restoreFocus){
-  const currentMinute=nowMinutes();
-  if(!plans.length)plans=[createPlan()];
-  body.innerHTML=plans.map(plan=>{
-    const range=parseTimeRange(plan.time);
-    const isCurrent=range&&currentMinute>=range.start&&currentMinute<range.end;
-    const cls=isCurrent?'current':'';
-    return '<tr class="'+cls.trim()+'" data-id="'+plan.id+'">'+
-      '<td data-label="时间"><div class="schedule-time-line"><div class="schedule-edit" contenteditable="true" data-field="time" data-placeholder="10:00 - 10:15">'+esc(plan.time)+'</div>'+(isCurrent?'<span class="current-tag">进行中</span>':'')+'</div></td>'+
-      '<td data-label="任务"><div class="schedule-edit" contenteditable="true" data-field="task" data-placeholder="输入任务">'+esc(plan.task)+'</div></td>'+
-      '<td data-label="具体安排"><div class="schedule-edit" contenteditable="true" data-field="detail" data-placeholder="输入具体安排">'+esc(plan.detail)+'</div></td>'+
-      '<td class="schedule-delete-cell" data-label="操作"><button class="schedule-delete" type="button" aria-label="删除这一行" title="删除这一行"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>'+
-    '</tr>';
-  }).join('');
-  updateProgress();
-  if(restoreFocus){
-    const target=body.querySelector('tr[data-id="'+restoreFocus.id+'"] [data-field="'+restoreFocus.field+'"]');
-    if(target){target.focus();setCaretOffset(target,restoreFocus.offset);}
-  }
-}
-
-function refreshRowStates(){
-  const currentMinute=nowMinutes();
-  body.querySelectorAll('tr').forEach(row=>{
-    const plan=plans.find(p=>p.id===row.dataset.id);
-    if(!plan)return;
-    const range=parseTimeRange(plan.time);
-    const isCurrent=range&&currentMinute>=range.start&&currentMinute<range.end;
-    row.classList.toggle('current',Boolean(isCurrent));
-    const tag=row.querySelector('.current-tag');
-    const timeLine=row.querySelector('.schedule-time-line');
-    if(isCurrent&&!tag&&timeLine){
-      const span=document.createElement('span');span.className='current-tag';span.textContent='进行中';timeLine.appendChild(span);
-    }
-    if(!isCurrent&&tag)tag.remove();
   });
+  judgementCorrect.textContent=String(judgementQuestions);
+  judgementScore.textContent=formatScore(judgementPoints);
+  totalCorrect.textContent=String(allCorrect);
+  totalPoints.textContent=formatScore(allPoints);
+  if(summaryCorrect)summaryCorrect.textContent=String(allCorrect);
+  if(summaryPoints)summaryPoints.textContent=formatScore(allPoints);
+  if(topBarFill)topBarFill.style.width=Math.min(100,Math.max(0,allPoints))+'%';
 }
 
-function updateNow(){
-  updateClockText();
-  if(body.contains(document.activeElement)&&document.activeElement.isContentEditable)refreshRowStates();
-  else render();
-}
-
-function scheduleSort(editable){
-  window.clearTimeout(sortTimer);
-  sortTimer=window.setTimeout(()=>{
-    const row=editable.closest('tr');
-    const focus={id:row?row.dataset.id:'',field:editable.dataset.field,offset:getCaretOffset(editable)};
-    sortPlans();savePlans();render(focus);
-  },450);
-}
-
-function importExample(){
-  if(meaningfulPlans().length>0){
-    const ok=confirm('当前已有学习计划，确定要覆盖为示例计划吗？');
-    if(!ok)return;
-  }
-  plans=examplePlans.map(item=>createPlan(item[0],item[1],item[2],false));
-  sortPlans();savePlans();render();showToast('已导入示例计划');
-}
-
-function clearAll(){
-  const ok=confirm('确定要清空全部学习计划吗？');
-  if(!ok)return;
-  localStorage.removeItem(SCHEDULE_STORAGE_KEY);
-  plans=[createPlan()];
-  savePlans();
-  render();
-  showToast('学习计划已清空');
-}
-
-function saveArchive(){
-  const input=prompt('要保存到哪个档案？请输入 1-5','1');
-  if(input===null)return;
-  const slot=Number(String(input).trim());
-  if(!Number.isInteger(slot)||slot<1||slot>SCHEDULE_ARCHIVE_COUNT){
-    alert('请输入 1 到 5 之间的数字。');
-    return;
-  }
-  if(meaningfulPlans().length===0){
-    const ok=confirm('当前学习计划是空白的，仍然保存吗？');
-    if(!ok)return;
-  }
-  if(localStorage.getItem(archiveKey(slot))){
-    const ok=confirm('档案'+slot+'已经有内容，确定要覆盖吗？');
-    if(!ok)return;
-  }
-  localStorage.setItem(archiveKey(slot),JSON.stringify(cleanPlansForStorage(plans)));
-  updateArchiveButtonStates();
-  showToast('已保存到档案'+slot);
-}
-
-function importArchive(slot){
-  const archived=readArchive(slot);
-  if(!archived||archived.length===0){
-    alert('档案'+slot+'还没有保存内容。');
-    return;
-  }
-  if(meaningfulPlans().length>0){
-    const ok=confirm('导入档案'+slot+'会覆盖当前学习计划。确定继续吗？');
-    if(!ok)return;
-  }
-  plans=archived.map(plan=>createPlan(plan.time,plan.task,plan.detail,plan.done));
-  sortPlans();
-  savePlans();
-  render();
-  showToast('已导入档案'+slot);
-}
-
-body.addEventListener('input',e=>{
-  const editable=e.target.closest('[contenteditable="true"]');
-  if(!editable)return;
-  const row=editable.closest('tr');
-  const plan=plans.find(p=>p.id===row.dataset.id);
-  if(!plan)return;
-  plan[editable.dataset.field]=editable.textContent.trim();
-  savePlans();
-  if(editable.dataset.field==='time')scheduleSort(editable);
-  else updateProgress();
+rows.forEach(row=>{
+  const input=row.querySelector('.score-input');
+  input.addEventListener('input',updateScores);
+  input.addEventListener('change',updateScores);
 });
 
-body.addEventListener('blur',e=>{
-  const editable=e.target.closest('[contenteditable="true"]');
-  if(!editable||editable.dataset.field!=='time')return;
-  window.clearTimeout(sortTimer);
-  sortPlans();savePlans();render();
-},true);
-
-body.addEventListener('keydown',e=>{
-  const editable=e.target.closest('[contenteditable="true"]');
-  if(!editable)return;
-  if(e.key==='Enter'){e.preventDefault();editable.blur();}
-});
-
-body.addEventListener('click',e=>{
-  const btn=e.target.closest('.schedule-delete');
-  if(!btn)return;
-  const row=btn.closest('tr');
-  plans=plans.filter(p=>p.id!==row.dataset.id);
-  if(!plans.length)plans=[createPlan()];
-  savePlans();render();
-});
-
-addBtn.addEventListener('click',()=>{
-  plans.push(createPlan());
-  savePlans();render();
-});
-clearBtn.addEventListener('click',clearAll);
-saveBtn.addEventListener('click',saveArchive);
-archiveBtns.forEach(btn=>{
-  btn.addEventListener('click',()=>importArchive(Number(btn.dataset.archiveSlot)));
-});
-
-document.querySelectorAll('.ripple').forEach(btn=>{
-  btn.addEventListener('click',function(e){
-    const rect=this.getBoundingClientRect();
-    const x=e.clientX-rect.left,y=e.clientY-rect.top;
-    const span=document.createElement('span');
-    const size=Math.max(rect.width,rect.height)*1.5;
-    span.style.width=span.style.height=size+'px';
-    span.style.left=(x-size/2)+'px';span.style.top=(y-size/2)+'px';
-    this.appendChild(span);
-    setTimeout(()=>span.remove(),600);
-  });
-});
-
-// 底部导航切到学习计划时会调用这个名字，保留入口避免影响原切换逻辑。
-window.updateSlider=function(){
-  sortPlans();
-  savePlans();
-  updateNow();
-  scrollCurrentPlanIntoView();
-};
-
-sortPlans();
-savePlans();
-updateArchiveButtonStates();
-updateNow();
-setInterval(updateNow,30000);
+updateScores();
 })();
 
 
