@@ -557,10 +557,11 @@ body{
 .timer-secondary-controls{display:flex;align-items:center;justify-content:center;gap:8px}
 .timer-secondary-controls[hidden]{display:none}
 .timer-secondary-controls .timer-btn{width:108px;height:44px;font-size:13px;letter-spacing:0.8px}
+.timer-control-region.has-session .timer-secondary-controls{order:1}
+.timer-control-region.has-session .timer-btn-wrap{order:2}
+.timer-control-region.has-session .timer-btn-wrap .timer-btn{width:108px;height:44px;font-size:13px;letter-spacing:0.8px}
 .timer-btn.pause{color:var(--primary);background:linear-gradient(180deg,rgba(255,255,255,0.38) 0%,rgba(255,255,255,0.16) 100%)}
 .timer-btn.pause:hover{border-color:rgba(var(--primary-rgb),0.42);box-shadow:0 10px 24px -8px rgba(var(--primary-rgb),0.22),inset 0 1px 1px rgba(255,255,255,0.8)}
-.timer-btn.reset{color:var(--danger);background:linear-gradient(180deg,rgba(255,255,255,0.34) 0%,rgba(255,255,255,0.14) 100%)}
-.timer-btn.reset:hover{border-color:rgba(var(--danger-rgb),0.38);background:rgba(var(--danger-rgb),0.14);box-shadow:0 10px 24px -8px rgba(var(--danger-rgb),0.20),inset 0 1px 1px rgba(255,255,255,0.8)}
 
 
 .total-section{
@@ -688,15 +689,15 @@ body{
 }
 .score-table th:nth-child(1){width:150px}
 .score-table th:nth-child(2){width:300px}
-.score-table th:nth-child(3){width:160px}
-.score-table th:nth-child(4){width:170px}
+.score-table th:nth-child(3){width:160px;text-align:center}
+.score-table th:nth-child(4){width:170px;text-align:right}
 .score-table td{
   padding:10px 16px;border-bottom:1px solid rgba(var(--shadow-rgb),0.12);
   vertical-align:middle;font-size:14px;color:var(--text);line-height:1.4;
   transition:background 0.28s ease,color 0.28s ease,opacity 0.28s ease;
 }
 .score-table tbody tr td,.score-table tfoot tr td{background:linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.12) 100%)}
-.score-table .score-subtotal-row td{background:rgba(var(--success-rgb),0.20);font-weight:700}
+.score-table .score-subtotal-row td{font-weight:700}
 .score-table .score-total-row td{
   background:rgba(var(--primary-rgb),0.20);border-bottom:none;font-weight:800;
 }
@@ -957,7 +958,6 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
             </div>
             <div class="timer-secondary-controls" id="timerSecondaryControls" hidden>
               <button class="timer-btn pause" id="timerPauseBtn" type="button">暂停</button>
-              <button class="timer-btn reset" id="timerResetBtn" type="button">复位</button>
             </div>
           </div>
         </div>
@@ -1042,25 +1042,25 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
               <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 7.5</span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.8" data-max-score="8">
-              <td class="score-section-cell">判断推理</td>
+              <td class="score-section-cell"></td>
               <td class="score-subtype-cell">定义判断</td>
               <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="定义判断正确题数"><span class="score-fraction"> / 10</span></td>
               <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 8</span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.75" data-max-score="7.5">
-              <td class="score-section-cell">判断推理</td>
+              <td class="score-section-cell"></td>
               <td class="score-subtype-cell">类比推理</td>
               <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="类比推理正确题数"><span class="score-fraction"> / 10</span></td>
               <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 7.5</span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.9" data-max-score="9">
-              <td class="score-section-cell">判断推理</td>
+              <td class="score-section-cell"></td>
               <td class="score-subtype-cell">逻辑判断</td>
               <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="逻辑判断正确题数"><span class="score-fraction"> / 10</span></td>
               <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 9</span></td>
             </tr>
             <tr class="score-subtotal-row" data-score-subtotal="judgement">
-              <td class="score-section-cell">判断推理</td>
+              <td class="score-section-cell"></td>
               <td class="score-subtype-cell">合计</td>
               <td class="score-count-cell"><output id="judgementCorrect" class="score-subtotal-output">0</output><span class="score-fraction"> / 40</span></td>
               <td class="score-points-cell"><output id="judgementScore" class="score-subtotal-output">0</output><span class="score-fraction"> / 32</span></td>
@@ -1072,7 +1072,7 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
               <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 15</span></td>
             </tr>
             <tr class="score-total-row">
-              <td class="score-section-cell">合计</td>
+              <td class="score-section-cell">总分</td>
               <td class="score-subtype-cell"></td>
               <td class="score-count-cell"><output id="scoreTotalCorrect" class="score-total-output">0</output><span class="score-fraction"> / 120</span></td>
               <td class="score-points-cell"><output id="scoreTotalPoints" class="score-total-output">0</output><span class="score-fraction"> / 100</span></td>
@@ -6388,7 +6388,7 @@ class DigitScroller {
 }
 
 const dateText=$('dateText'),timerBtn=$('timerBtn'),timerBtnBreathe=$('timerBtnBreathe');
-const timerPauseBtn=$('timerPauseBtn'),timerResetBtn=$('timerResetBtn'),timerSecondaryControls=$('timerSecondaryControls');
+const timerPauseBtn=$('timerPauseBtn'),timerSecondaryControls=$('timerSecondaryControls'),timerControlRegion=document.querySelector('.timer-control-region');
 const totalText=$('totalText'),recordsList=$('recordsList');
 const addBtn=$('timerAddBtn'),modalOverlay=$('timerModalOverlay'),modalStartH=$('modalStartH'),modalStartM=$('modalStartM');
 const modalEndH=$('modalEndH'),modalEndM=$('modalEndM'),modalConfirm=$('modalConfirm'),modalCancel=$('modalCancel');
@@ -6416,6 +6416,7 @@ function freezeRunningTime(){
 function updateTimerControls(){
   const hasSession=isRunning||isPaused;
   timerSecondaryControls.hidden=!hasSession;
+  timerControlRegion.classList.toggle('has-session',hasSession);
   timerPauseBtn.textContent=isPaused?'继续':'暂停';
   timerBtn.textContent=hasSession?'停止':'计时';
   timerBtn.className='timer-btn '+(hasSession?'stop':'start');
@@ -6443,10 +6444,6 @@ function completeTimer(){
   const endTime=new Date();const startTime=new Date(timerStartedAt||endTime);
   records.unshift({start:formatTimeHM(startTime),end:formatTimeHM(endTime),duration:elapsed});
   saveRecords(records);renderRecords();
-  stopTimerInterval();timerStart=null;timerStartedAt=null;elapsed=0;isRunning=false;isPaused=false;
-  timerScroller.reset();updateTimerControls();
-}
-function resetTimer(){
   stopTimerInterval();timerStart=null;timerStartedAt=null;elapsed=0;isRunning=false;isPaused=false;
   timerScroller.reset();updateTimerControls();
 }
@@ -6488,7 +6485,6 @@ timerBtn.addEventListener('click',()=>{
   else completeTimer();
 });
 timerPauseBtn.addEventListener('click',()=>{if(isRunning)pauseTimer();else if(isPaused)resumeTimer();});
-timerResetBtn.addEventListener('click',resetTimer);
 
 for(let i=0;i<24;i++){const opt=document.createElement('option');opt.value=i;opt.textContent=pad(i);modalStartH.appendChild(opt.cloneNode(true));modalEndH.appendChild(opt.cloneNode(true));}
 for(let i=0;i<60;i++){const opt=document.createElement('option');opt.value=i;opt.textContent=pad(i);modalStartM.appendChild(opt.cloneNode(true));modalEndM.appendChild(opt.cloneNode(true));}
