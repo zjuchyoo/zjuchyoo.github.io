@@ -689,8 +689,8 @@ body{
 }
 .score-table th:nth-child(1){width:150px}
 .score-table th:nth-child(2){width:300px}
-.score-table th:nth-child(3){width:160px;text-align:center}
-.score-table th:nth-child(4){width:170px;text-align:right}
+.score-table th:nth-child(3){width:160px}
+.score-table th:nth-child(4){width:170px}
 .score-table td{
   padding:10px 16px;border-bottom:1px solid rgba(var(--shadow-rgb),0.12);
   vertical-align:middle;font-size:14px;color:var(--text);line-height:1.4;
@@ -704,8 +704,12 @@ body{
 .score-table .score-section-cell{font-weight:700;white-space:nowrap}
 .score-table .score-subtype-cell{color:var(--text-secondary);word-break:break-word}
 .score-count-cell,.score-points-cell{font-variant-numeric:tabular-nums;white-space:nowrap}
-.score-count-cell{text-align:center}
-.score-points-cell{text-align:right}
+.score-pair,.score-pair-heading{
+  display:grid;grid-template-columns:minmax(0,1fr) 1em minmax(0,1fr);align-items:center;width:100%;
+}
+.score-pair > :first-child,.score-pair-heading > :first-child{justify-self:end;text-align:right}
+.score-pair > :last-child,.score-pair-heading > :last-child{justify-self:start;text-align:left}
+.score-divider{justify-self:center;color:var(--text-secondary);font-weight:600}
 .score-input{
   width:70px;height:34px;padding:0 8px;text-align:center;vertical-align:middle;
   border:1px solid rgba(255,255,255,0.58);border-radius:10px;
@@ -717,7 +721,7 @@ body{
 .score-input::-webkit-outer-spin-button,.score-input::-webkit-inner-spin-button{margin:0;appearance:none}
 .score-input::placeholder{color:var(--text-muted);opacity:0.85}
 .score-input:focus{border-color:rgba(var(--primary-rgb),0.58);background:rgba(255,255,255,0.46);box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.10),inset 0 1px 0 rgba(255,255,255,0.8)}
-.score-earned,.score-subtotal-output,.score-total-output{display:inline-block;min-width:3.2em;text-align:right;font-weight:800;color:var(--text)}
+.score-earned,.score-subtotal-output,.score-total-output{min-width:3.2em;text-align:right;font-weight:800;color:var(--text)}
 .score-fraction{color:var(--text-secondary);font-weight:600}
 
 /* 成绩估算响应式 */
@@ -1006,76 +1010,76 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
             <tr>
               <th>大题型</th>
               <th>小题型</th>
-              <th>正确题数/总题数</th>
-              <th>模块得分/模块总分</th>
+              <th><span class="score-pair-heading"><span>正确题数</span><span class="score-divider">/</span><span>总题数</span></span></th>
+              <th><span class="score-pair-heading"><span>模块得分</span><span class="score-divider">/</span><span>模块总分</span></span></th>
             </tr>
           </thead>
           <tbody>
             <tr class="score-data-row" data-score-row data-section="politics" data-total="10" data-rate="0.65" data-max-score="6.5">
               <td class="score-section-cell">政治理论</td>
               <td class="score-subtype-cell">政治理论、时政政策</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="政治理论正确题数"><span class="score-fraction"> / 10</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 6.5</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="政治理论正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">6.5</span></span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="common" data-total="10" data-rate="0.65" data-max-score="6.5">
               <td class="score-section-cell">常识判断</td>
               <td class="score-subtype-cell">法律、经济、科技、人文等</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="常识判断正确题数"><span class="score-fraction"> / 10</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 6.5</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="常识判断正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">6.5</span></span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="language" data-total="25" data-rate="0.8" data-max-score="20">
               <td class="score-section-cell">言语理解</td>
               <td class="score-subtype-cell">逻辑填空、片段阅读、语句表达等</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="25" step="1" inputmode="numeric" autocomplete="off" aria-label="言语理解正确题数"><span class="score-fraction"> / 25</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 20</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="25" step="1" inputmode="numeric" autocomplete="off" aria-label="言语理解正确题数"><span class="score-divider">/</span><span class="score-fraction">25</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">20</span></span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="quantity" data-total="20" data-rate="1" data-max-score="20">
               <td class="score-section-cell">数量关系</td>
               <td class="score-subtype-cell">数学运算</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="20" step="1" inputmode="numeric" autocomplete="off" aria-label="数量关系正确题数"><span class="score-fraction"> / 20</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 20</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="20" step="1" inputmode="numeric" autocomplete="off" aria-label="数量关系正确题数"><span class="score-divider">/</span><span class="score-fraction">20</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">20</span></span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.75" data-max-score="7.5">
               <td class="score-section-cell">判断推理</td>
               <td class="score-subtype-cell">图形推理</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="图形推理正确题数"><span class="score-fraction"> / 10</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 7.5</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="图形推理正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">7.5</span></span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.8" data-max-score="8">
               <td class="score-section-cell"></td>
               <td class="score-subtype-cell">定义判断</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="定义判断正确题数"><span class="score-fraction"> / 10</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 8</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="定义判断正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">8</span></span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.75" data-max-score="7.5">
               <td class="score-section-cell"></td>
               <td class="score-subtype-cell">类比推理</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="类比推理正确题数"><span class="score-fraction"> / 10</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 7.5</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="类比推理正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">7.5</span></span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.9" data-max-score="9">
               <td class="score-section-cell"></td>
               <td class="score-subtype-cell">逻辑判断</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="逻辑判断正确题数"><span class="score-fraction"> / 10</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 9</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="逻辑判断正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">9</span></span></td>
             </tr>
             <tr class="score-subtotal-row" data-score-subtotal="judgement">
               <td class="score-section-cell"></td>
               <td class="score-subtype-cell">合计</td>
-              <td class="score-count-cell"><output id="judgementCorrect" class="score-subtotal-output">0</output><span class="score-fraction"> / 40</span></td>
-              <td class="score-points-cell"><output id="judgementScore" class="score-subtotal-output">0</output><span class="score-fraction"> / 32</span></td>
+              <td class="score-count-cell"><span class="score-pair"><output id="judgementCorrect" class="score-subtotal-output">0</output><span class="score-divider">/</span><span class="score-fraction">40</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output id="judgementScore" class="score-subtotal-output">0</output><span class="score-divider">/</span><span class="score-fraction">32</span></span></td>
             </tr>
             <tr class="score-data-row" data-score-row data-section="data" data-total="15" data-rate="1" data-max-score="15">
               <td class="score-section-cell">资料分析</td>
               <td class="score-subtype-cell">计算、比较、综合判断</td>
-              <td class="score-count-cell"><input class="score-input" type="number" min="0" max="15" step="1" inputmode="numeric" autocomplete="off" aria-label="资料分析正确题数"><span class="score-fraction"> / 15</span></td>
-              <td class="score-points-cell"><output class="score-earned">0</output><span class="score-fraction"> / 15</span></td>
+              <td class="score-count-cell"><span class="score-pair"><input class="score-input" type="number" min="0" max="15" step="1" inputmode="numeric" autocomplete="off" aria-label="资料分析正确题数"><span class="score-divider">/</span><span class="score-fraction">15</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">15</span></span></td>
             </tr>
             <tr class="score-total-row">
               <td class="score-section-cell">总分</td>
               <td class="score-subtype-cell"></td>
-              <td class="score-count-cell"><output id="scoreTotalCorrect" class="score-total-output">0</output><span class="score-fraction"> / 120</span></td>
-              <td class="score-points-cell"><output id="scoreTotalPoints" class="score-total-output">0</output><span class="score-fraction"> / 100</span></td>
+              <td class="score-count-cell"><span class="score-pair"><output id="scoreTotalCorrect" class="score-total-output">0</output><span class="score-divider">/</span><span class="score-fraction">120</span></span></td>
+              <td class="score-points-cell"><span class="score-pair"><output id="scoreTotalPoints" class="score-total-output">0</output><span class="score-divider">/</span><span class="score-fraction">100</span></span></td>
             </tr>
           </tbody>
         </table>
