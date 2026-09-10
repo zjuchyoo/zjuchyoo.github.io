@@ -159,6 +159,14 @@ document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&user&&pushTimer){ clearTimeout(pushTimer); sync('hidden'); }
 });
 
+/* 登录邮件的回跳地址。必须归一化掉结尾的 index.html：
+   从 /study-assistant/ 和从 /study-assistant/index.html 进站会算出两个不同地址，
+   能否匹配就取决于 Supabase 的 ** 通配符是否匹配空串 —— 不如直接抹平，
+   让它恒等于后台设置的 Site URL，那个地址一定是被允许的。 */
+function redirectTarget(){
+  return location.origin+location.pathname.replace(/index\.html$/,'');
+}
+
 /* ---------- 界面 ---------- */
 function fmtTime(d){
   if(!d) return '还没同步过';
@@ -228,7 +236,7 @@ function buildUI(){
     this.disabled=true; paint('正在发送…');
     const {error}=await sb.auth.signInWithOtp({
       email:email,
-      options:{emailRedirectTo:location.origin+location.pathname}
+      options:{emailRedirectTo:redirectTarget()}
     });
     this.disabled=false;
     if(error){ lastError=error.message; paint(); }

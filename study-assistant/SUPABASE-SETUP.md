@@ -61,15 +61,15 @@ create policy "study_state_own_rows"
   http://127.0.0.1:8899/**
   ```
 
-⚠️ 一定要用 `/**` 结尾，不能填精确地址。代码里的回跳地址是
-`location.origin + location.pathname`，你从 `.../study-assistant/` 进站时它是
-`.../study-assistant/`，从 `.../study-assistant/index.html` 进站时它是
-`.../index.html` —— 填死一个就只能匹配上其中一种，另一种会报
-`requested path is invalid`。
+代码里的回跳地址做了归一化（`cloud-sync.js` 的 `redirectTarget()`）：结尾的
+`index.html` 会被抹掉，所以不论你从 `.../study-assistant/` 还是
+`.../study-assistant/index.html` 进站，算出来的都是同一个地址，且恒等于上面的
+Site URL —— Site URL 本身永远是被允许的回跳目标，所以这一条一定能匹配上。
 
-第二条是本地调试用的，加上之后配置才能在推送前先验证一遍。
+Redirect URLs 里那两条通配符是冗余保险（本地调试那条有用：加上之后才能在
+推送前先在 `127.0.0.1` 上验证一遍）。
 
-漏了这一步，邮件里的登录链接点开会跳到错误页。
+漏了 Site URL 这一步，邮件里的登录链接点开会跳到错误页。
 
 ## 四、填配置
 
