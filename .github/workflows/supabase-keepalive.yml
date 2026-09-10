@@ -1,0 +1,48 @@
+# Supabase 免费版会在连续 7 天没有 API 请求后自动暂停项目。
+# 暂停不会丢数据（数据库卷冻结在磁盘上，一年内可在后台 Restore），
+# 但暂停期间同步是断的。每天发一次请求就足以保持活跃。
+#
+# 这里用的 key 是 publishable key，本来就公开写在 study-assistant/cloud-config.js 里，
+# 访问控制在数据库的 RLS 策略上，所以不需要配置 Secrets。
+#
+# 注意：GitHub 会在公开仓库连续 60 天没有活动后停用定时工作流（停用前会发邮件）。
+# 真被停用了，去 Actions 页面点一下 Enable 即可恢复。
+
+name: Supabase 保活
+
+on:
+  schedule:
+    # 每天 UTC 03:17（北京时间 11:17）。错开整点，避免和大量任务挤在一起。
+    - cron: '17 3 * * *'
+  workflow_dispatch:        # 也允许手动点一下立即执行
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 请求一次 REST API
+        run: |
+          URL="https://vrdpdvxyjrtlqrdmiorz.supabase.co/rest/v1/study_state?select=key&limit=1"
+          KEY="sb_publishable_Q4YeaFuW_6gEFeMCOmY7mg_u56GIbGp"
+
+          # 试三次：偶发的网络抖动不该让整个任务失败、给你发一封失败邮件。
+          # 三次都不行才算真出事 —— 那种情况你确实需要知道。
+          for i in 1 2 3; do
+            code=$(curl -sS -o /tmp/body.txt -w '%{http_code}' --max-time 30 \
+                   "$URL" -H "apikey: $KEY" || echo "000")
+            echo "第 $i 次：HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "✓ 保活成功，项目处于活跃状态"
+              exit 0
+            fi
+            [ $i -lt 3 ] && sleep 20
+          done
+
+          echo "::error::保活请求连续三次失败（最后一次 HTTP $code）"
+          echo "响应内容："
+          cat /tmp/body.txt || true
+          echo ""
+          echo "常见原因：项目已被暂停（去 Supabase 后台点 Restore）、"
+          echo "key 变了（同步更新 cloud-config.js 和本文件）、或 Supabase 侧故障。"
+          exit 1
