@@ -47,29 +47,25 @@ create policy "study_state_own_rows"
 > `auth.uid() = user_id` —— 没登录的请求 `auth.uid()` 是 null，一行都读不到；
 > 登录了也只能碰自己的行。这就是 Supabase 设计上让 anon key 直接写进前端的原因。
 
-## 三、允许登录后跳回你的站点
+## 三、建一个登录用户
 
-**Authentication → URL Configuration**：
+**不用邮箱验证码，也不用登录链接。** Supabase 内置邮件服务只有 **2 封/小时**，
+而且只肯发给你 Supabase 账号本身那个邮箱 —— 拿来当登录方式太脆了。
+改成直接在后台建好用户、用密码登录，永远不碰邮件。
 
-- **Site URL** 填
-  ```
-  https://zjuchyoo.github.io/study-assistant/
-  ```
-- **Redirect URLs** 点 `Add URL`，加这两条（**必须带 `/**` 通配符**）：
-  ```
-  https://zjuchyoo.github.io/study-assistant/**
-  http://127.0.0.1:8899/**
-  ```
+**Authentication → Users → Add user → Create new user**：
 
-代码里的回跳地址做了归一化（`cloud-sync.js` 的 `redirectTarget()`）：结尾的
-`index.html` 会被抹掉，所以不论你从 `.../study-assistant/` 还是
-`.../study-assistant/index.html` 进站，算出来的都是同一个地址，且恒等于上面的
-Site URL —— Site URL 本身永远是被允许的回跳目标，所以这一条一定能匹配上。
+- **Email**：填你常用的邮箱（这里只当账号名用，不会给它发信）
+- **Password**：自己设一个，**记牢**（这个密码只有你知道，我也看不到）
+- ✅ **务必勾上 Auto Confirm User** —— 不勾的话这个用户是"待确认"状态，登录会被拒
 
-Redirect URLs 里那两条通配符是冗余保险（本地调试那条有用：加上之后才能在
-推送前先在 `127.0.0.1` 上验证一遍）。
+点 Create user。列表里出现这一条就成好了。
 
-漏了 Site URL 这一步，邮件里的登录链接点开会跳到错误页。
+> 网站上**没有注册入口**，只有登录框。所以陌生人打开你的站也没法在你的项目里开号，
+> 能登进来的只有你在这里手动建的用户。
+>
+> 想加第二个人共用？在这里再建一个用户即可 —— 每个账号的数据由 RLS 完全隔开，
+> 互相看不到。
 
 ## 四、填配置
 
@@ -90,15 +86,24 @@ localStorage 一起清掉，配置要是也存在那儿，清完就登不上去�
 
 ## 五、用起来
 
-打开网站，右上角云朵图标 → 填邮箱 → 「发送登录链接」→ 去邮箱点开链接。
+打开网站 → 右上角**云朵图标** → 填第三步那个邮箱和密码 → 登录。
+
+浏览器会提示保存密码，存下来，以后换设备自动填。
+
+云朵图标右上角有个常驻状态点，不用点开面板就能看到：
+
+| 点 | 含义 |
+|---|---|
+| 🟢 绿 | 已同步 |
+| 🟡 黄 | 未登录，数据只在这台设备上 |
+| 🔵 脉冲 | 正在同步 / 有改动待推 |
+| 🔴 红 | 出错了，点开面板看原因 |
+
 登录后会立刻做一次同步，之后：
 
 - 任何改动攒 3 秒自动上传
 - 切后台 / 关标签页前会赶紧推一次
 - 每次打开页面先拉一次
-
-Supabase 免费额度每小时发信有限（默认 4 封/小时）。自用完全够，
-真嫌少可以在 **Authentication → Emails** 接自己的 SMTP。
 
 ---
 
@@ -128,13 +133,14 @@ Supabase 免费额度每小时发信有限（默认 4 封/小时）。自用完�
 
 | 现象 | 原因 / 处理 |
 |---|---|
-| 点开邮件链接跳到 `requested path is invalid` | 第三步的 Redirect URLs 没加，或没带 `/**` 通配符 |
 | 面板一直显示「未配置云同步」 | `cloud-config.js` 里 url 或 anonKey 是空的；改完记得刷新页面 |
 | 「Supabase 加载失败（离线？）」 | CDN 没连上。查网络；离线状态下同步关闭，网站其余部分照常用 |
 | 同步失败提示 `relation "study_state" does not exist` | 第二步的建表 SQL 没跑成功，回 SQL Editor 重跑一遍 |
 | 同步失败提示 `new row violates row-level security` | RLS 策略没建上。把第二步 SQL 里 `create policy` 那段单独再跑一次 |
 | 同步失败提示 `JWT expired` / 401 | 会话过期了，面板里退出登录再重新登一次 |
-| 收不到登录邮件 | 先看垃圾箱。Supabase 免费额度默认 4 封/小时，超了要等 |
+| 登录提示「邮箱或密码不对」 | 对照第三步后台里那条用户，注意大小写 |
+| 登录提示「这个用户还没确认邮箱」 | 建用户时漏勾了 Auto Confirm User，删掉重建 |
+| 密码忘了 | 后台 Authentication → Users → 那一行右侧菜单 → Reset password |
 | 登录后记录没回来 | 确认登录用的是**同一个邮箱** —— 数据是按账号隔离的 |
 
 面板上的报错文案会直接显示 Supabase 返回的原文，看不懂就整句发我。

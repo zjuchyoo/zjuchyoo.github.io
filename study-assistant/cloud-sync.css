@@ -65,6 +65,13 @@
 }
 .cloud-input:focus{border-color:rgba(var(--primary-rgb),.58);box-shadow:0 0 0 4px rgba(var(--primary-rgb),.10),inset 0 1px 0 rgba(255,255,255,.8)}
 .cloud-input::placeholder{color:var(--text-muted)}
+#cloudLoginForm{margin:0}
+/* 浏览器自动填充的黄底会盖掉玻璃质感，用超长 inset 阴影顶掉 */
+.cloud-input:-webkit-autofill,
+.cloud-input:-webkit-autofill:focus{
+  -webkit-box-shadow:0 0 0 60px #fdfbf8 inset;
+  -webkit-text-fill-color:var(--text);
+}
 
 .cloud-btn{
   width:100%;height:38px;margin-bottom:7px;

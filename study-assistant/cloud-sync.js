@@ -174,14 +174,6 @@ document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&user&&pushTimer){ clearTimeout(pushTimer); sync('hidden'); }
 });
 
-/* 登录邮件的回跳地址。必须归一化掉结尾的 index.html：
-   从 /study-assistant/ 和从 /study-assistant/index.html 进站会算出两个不同地址，
-   能否匹配就取决于 Supabase 的 ** 通配符是否匹配空串 —— 不如直接抹平，
-   让它恒等于后台设置的 Site URL，那个地址一定是被允许的。 */
-function redirectTarget(){
-  return location.origin+location.pathname.replace(/index\.html$/,'');
-}
-
 /* ---------- 界面 ---------- */
 function fmtTime(d){
   if(!d) return '还没同步过';
@@ -220,9 +212,16 @@ function buildUI(){
     '<div class="cloud-panel-title"><span class="cloud-dot"></span>云同步</div>'+
     '<div class="cloud-status" id="cloudStatus"></div>'+
     '<div id="cloudSignedOut">'+
-      '<p class="cloud-hint">用邮箱收一封登录链接。换设备或清了浏览器数据后，重新登录即可找回记录。</p>'+
-      '<input class="cloud-input" id="cloudEmail" type="email" placeholder="你的邮箱" autocomplete="email">'+
-      '<button class="cloud-btn is-primary" id="cloudSendLink" type="button">发送登录链接</button>'+
+      '<p class="cloud-hint">换设备或清了浏览器数据后，在这里登录即可找回记录。</p>'+
+      /* 用真正的 form 而不是散装 input：浏览器只在表单提交时才提示保存密码，
+         也才会在别的设备上自动填充。autocomplete 的取值同样是给密码管理器看的。 */
+      '<form id="cloudLoginForm" autocomplete="on">'+
+        '<input class="cloud-input" id="cloudEmail" type="email" name="username" '+
+          'placeholder="邮箱" autocomplete="username" required>'+
+        '<input class="cloud-input" id="cloudPassword" type="password" name="password" '+
+          'placeholder="密码" autocomplete="current-password" required>'+
+        '<button class="cloud-btn is-primary" id="cloudLoginBtn" type="submit">登录</button>'+
+      '</form>'+
     '</div>'+
     '<div id="cloudSignedIn" hidden>'+
       '<p class="cloud-mail" id="cloudMail"></p>'+
@@ -250,19 +249,31 @@ function buildUI(){
     if(!panel.contains(e.target)&&e.target!==btn&&!btn.contains(e.target)) panel.classList.remove('show');
   });
 
-  panel.querySelector('#cloudSendLink').addEventListener('click',async function(){
-    const input=panel.querySelector('#cloudEmail');
-    const email=(input.value||'').trim();
-    if(!email||email.indexOf('@')<0){ paint('请填一个有效邮箱'); return; }
+  /* Supabase 的报错是英文且偏技术，翻成能直接照做的话 */
+  function loginErrorText(msg){
+    const m=String(msg||'');
+    if(/Invalid login credentials/i.test(m)) return '邮箱或密码不对';
+    if(/Email not confirmed/i.test(m)) return '这个用户还没确认邮箱 —— 去后台把它删掉重建，记得勾上 Auto Confirm User';
+    if(/rate limit|too many/i.test(m)) return '尝试太频繁，等几分钟再试';
+    if(/Failed to fetch|NetworkError/i.test(m)) return '连不上服务器，检查一下网络';
+    return m;
+  }
+
+  panel.querySelector('#cloudLoginForm').addEventListener('submit',async function(e){
+    e.preventDefault();
+    const email=(panel.querySelector('#cloudEmail').value||'').trim();
+    const pw=panel.querySelector('#cloudPassword').value||'';
+    if(!email||!pw){ paint('邮箱和密码都要填'); return; }
     if(!sb){ paint('云同步未就绪'); return; }
-    this.disabled=true; paint('正在发送…');
-    const {error}=await sb.auth.signInWithOtp({
-      email:email,
-      options:{emailRedirectTo:redirectTarget()}
-    });
-    this.disabled=false;
-    if(error){ lastError='发送失败：'+error.message; paint(); }
-    else{ lastError=null; paint('登录链接已发到 '+email+'，去邮箱点开它'); }
+    const btnEl=panel.querySelector('#cloudLoginBtn');
+    btnEl.disabled=true; lastError=null; paint('登录中…');
+    const {error}=await sb.auth.signInWithPassword({email:email,password:pw});
+    btnEl.disabled=false;
+    if(error){ lastError='登录失败：'+loginErrorText(error.message); paint(); return; }
+    /* 登录成功后清掉密码框，避免明文一直留在 DOM 里 */
+    panel.querySelector('#cloudPassword').value='';
+    lastError=null; paint();
+    /* onAuthStateChange 会接手触发首次同步 */
   });
   panel.querySelector('#cloudSyncNow').addEventListener('click',()=>sync('manual'));
   panel.querySelector('#cloudSignOut').addEventListener('click',async ()=>{
