@@ -164,6 +164,17 @@ async function run(){
   await inflight; await sleep(400);
   eq('途中的改动最终推上去了',cloudRows.get('u-1|'+SHEET).value.v.t,'同步途中又改了');
   eq('确实跑了不止一轮',netLog.filter(x=>x==='SELECT').length>=2,true);
+
+  /* ===== 10. 推送完成后状态要回到「已同步」，不能卡在「有改动待同步」 ===== */
+  lines.push('\n10. 推送完成后状态回到「已同步」');
+  const statusEl=document.getElementById('cloudStatus');
+  localStorage.setItem(SHEET,JSON.stringify({t:'看状态会不会卡住',l:1200}));
+  await sleep(300);
+  eq('刚改完显示待同步',statusEl.textContent.indexOf('待同步')>=0,true);
+  await sleep(4000);                       // 等防抖 3 秒 + 同步跑完
+  eq('推完之后回到已同步',statusEl.textContent.indexOf('已同步')>=0,true);
+  eq('不再显示待同步',statusEl.textContent.indexOf('待同步')<0,true);
+  eq('按钮状态点变绿',document.getElementById('cloudBtnDot').className.indexOf('is-ok')>=0,true);
 }
 </script>
 </body>

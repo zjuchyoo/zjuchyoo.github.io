@@ -106,6 +106,8 @@ async function sync(reason){
   /* 同步进行中又来了新请求：不能直接丢，否则这期间的改动要等下一次触发才补上。
      记一笔，等当前这轮跑完再补一轮。 */
   if(syncing){ syncAgain=true; return; }
+  /* 这一轮会把所有本地键都过一遍，排队中的那次推送就多余了 */
+  clearTimeout(pushTimer); pushTimer=null;
   syncing=true; lastError=null; paint('同步中…');
   try{
     const {data,error}=await sb.from(TABLE).select('key,value,updated_at').eq('user_id',user.id);
@@ -157,7 +159,9 @@ async function sync(reason){
 function schedulePush(){
   if(!user) return;
   clearTimeout(pushTimer);
-  pushTimer=setTimeout(()=>sync('local-change'),PUSH_DELAY);
+  /* 触发时必须把 pushTimer 置回 null：clearTimeout 只取消定时器，不清变量，
+     留着的过期 ID 是个真值，会让 paint() 永远停在「有改动待同步」。 */
+  pushTimer=setTimeout(()=>{ pushTimer=null; sync('local-change'); },PUSH_DELAY);
   paint();
 }
 
@@ -171,7 +175,7 @@ Storage.prototype.setItem=function(k,v){
 window.addEventListener('storage',e=>{ if(e.key&&isSynced(e.key)) schedulePush(); });
 /* 关标签页 / 切后台前把攒着的改动尽快推掉 */
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='hidden'&&user&&pushTimer){ clearTimeout(pushTimer); sync('hidden'); }
+  if(document.visibilityState==='hidden'&&user&&pushTimer){ clearTimeout(pushTimer); pushTimer=null; sync('hidden'); }
 });
 
 /* ---------- 界面 ---------- */
