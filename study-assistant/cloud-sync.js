@@ -64,6 +64,21 @@ let lastSyncedAt=null,lastError=null;
 const cfg=window.CLOUD_CONFIG||{};
 const enabled=!!(cfg.url&&cfg.anonKey);
 
+/* 登录链接跳回来时地址栏里会带参数（成功是 access_token / code，失败是 error）。
+   必须在 createClient 之前就抓下来 —— detectSessionInUrl 处理完会把它们清掉。 */
+const authReturn=(function(){
+  try{
+    const hp=new URLSearchParams((location.hash||'').replace(/^#/,''));
+    const qp=new URLSearchParams(location.search||'');
+    const pick=k=>hp.get(k)||qp.get(k);
+    const err=pick('error_description')||pick('error');
+    return {
+      isReturn:!!(err||pick('access_token')||pick('code')),
+      error:err?String(err).replace(/\+/g,' '):null
+    };
+  }catch(e){ return {isReturn:false,error:null}; }
+})();
+
 /* ---------- 拉取合并后让各模块重新读一遍 ---------- */
 function notify(keys){
   if(!keys.length) return;
@@ -131,7 +146,7 @@ async function sync(reason){
     lastSyncedAt=new Date();
     paint();
   }catch(e){
-    lastError=(e&&e.message)||String(e);
+    lastError='同步失败：'+((e&&e.message)||String(e));
     paint();
   }finally{
     syncing=false;
@@ -174,26 +189,30 @@ function fmtTime(d){
 }
 function paint(override){
   if(!ui) return;
-  const {dot,status,mail,signedIn,signedOut,syncBtn}=ui;
+  const {dot,status,mail,signedIn,signedOut,syncBtn,btn}=ui;
   const on=!!user;
   signedIn.hidden=!on; signedOut.hidden=on;
   if(on) mail.textContent=user.email||'已登录';
   let text,cls;
   if(override){ text=override; cls='is-busy'; }
-  else if(lastError){ text='同步失败：'+lastError; cls='is-bad'; }
+  else if(lastError){ text=lastError; cls='is-bad'; }
   else if(!enabled){ text='未配置云同步'; cls=''; }
   else if(!on){ text='未登录，数据只存在这台设备上'; cls='is-warn'; }
   else if(pushTimer){ text='有改动待同步'; cls='is-busy'; }
   else { text='已同步 · '+fmtTime(lastSyncedAt); cls='is-ok'; }
   status.textContent=text;
   dot.className='cloud-dot '+cls;
+  /* 按钮上也点一个同色的小圆点：面板默认收起，状态不能只藏在里面 */
+  if(ui.btnDot) ui.btnDot.className='cloud-btn-dot '+cls;
+  if(btn) btn.title='云同步 · '+text;
   if(syncBtn) syncBtn.disabled=!on||syncing;
 }
 
 function buildUI(){
   const btn=document.createElement('button');
   btn.className='cloud-toggle-btn'; btn.id='cloudToggleBtn'; btn.title='云同步';
-  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>';
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>'+
+    '<span class="cloud-btn-dot" id="cloudBtnDot"></span>';
 
   const panel=document.createElement('div');
   panel.className='cloud-panel'; panel.id='cloudPanel';
@@ -215,6 +234,9 @@ function buildUI(){
   document.body.appendChild(panel);
 
   ui={
+    btn:btn,
+    btnDot:btn.querySelector('#cloudBtnDot'),
+    panel:panel,
     dot:panel.querySelector('.cloud-dot'),
     status:panel.querySelector('#cloudStatus'),
     mail:panel.querySelector('#cloudMail'),
@@ -239,7 +261,7 @@ function buildUI(){
       options:{emailRedirectTo:redirectTarget()}
     });
     this.disabled=false;
-    if(error){ lastError=error.message; paint(); }
+    if(error){ lastError='发送失败：'+error.message; paint(); }
     else{ lastError=null; paint('登录链接已发到 '+email+'，去邮箱点开它'); }
   });
   panel.querySelector('#cloudSyncNow').addEventListener('click',()=>sync('manual'));
@@ -276,8 +298,16 @@ async function boot(){
       lastError='Supabase 加载失败（离线？）'; paint(); return;
     }
   }
+  /* 登录链接刚跳回来：不管成功失败都把面板弹开，让人立刻看到结果，
+     不用自己去点那个云朵图标才知道有没有登上。 */
+  if(authReturn.isReturn&&ui&&ui.panel) ui.panel.classList.add('show');
+  if(authReturn.error){ lastError='登录未完成：'+authReturn.error; paint(); }
+
+  /* detectSessionInUrl 的解析是异步的，getSession 可能比它先返回；
+     真正的登录成功以下面的 onAuthStateChange 为准。 */
   const {data}=await sb.auth.getSession();
   user=(data&&data.session&&data.session.user)||null;
+  if(user) lastError=null;
   paint();
   if(user) sync('boot');
 
@@ -285,6 +315,7 @@ async function boot(){
     const next=(session&&session.user)||null;
     const changed=(next&&next.id)!==(user&&user.id);
     user=next;
+    if(user) lastError=null;      /* 登上了，之前那条「登录未完成」就作废了 */
     paint();
     if(user&&changed) sync('auth');
   });

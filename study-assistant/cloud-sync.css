@@ -15,6 +15,21 @@
 .cloud-toggle-btn:active{transform:scale(1.05)}
 .cloud-toggle-btn svg{width:18px;height:18px}
 
+/* 状态点直接长在按钮上：面板默认收起，登没登上不能只藏在里面。
+   用真实 span 而不是 ::after —— 伪元素的样式没法可靠地读出来验证。 */
+.cloud-btn-dot{
+  position:absolute;top:-3px;right:-3px;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--text-muted);
+  border:2px solid var(--bg);
+  transition:background .3s ease;
+  pointer-events:none;
+}
+.cloud-btn-dot.is-ok{background:var(--success)}
+.cloud-btn-dot.is-warn{background:var(--warning)}
+.cloud-btn-dot.is-bad{background:var(--danger)}
+.cloud-btn-dot.is-busy{background:var(--primary);animation:cloudPulse 1.1s ease-in-out infinite}
+
 .cloud-panel{
   position:fixed;top:70px;right:24px;z-index:1001;
   background:linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.18) 100%);
