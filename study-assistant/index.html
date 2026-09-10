@@ -866,13 +866,20 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
   .idiom-table td:last-child{border-radius:0 12px 12px 0}
   .idiom-word-cell{font-size:18px!important}
   .idiom-word-cell::after{right:8px}
-  /* 三个页面共用紧凑 Dock，切换时导航栏不再改变高度或排版。 */
-  .bottom-nav{bottom:10px;gap:4px;padding:5px 8px;border-radius:20px}
+  /* 五个页面共用紧凑 Dock，切换时导航栏不再改变高度或排版。 */
+  .bottom-nav{bottom:10px;gap:4px;padding:5px 8px;border-radius:20px;max-width:calc(100vw - 16px)}
   .nav-slider{top:4px;bottom:4px;border-radius:14px}
-  .nav-item{flex-direction:row;gap:5px;padding:7px 14px;border-radius:14px}
-  .nav-item svg{width:18px;height:18px}
+  .nav-item{flex-direction:row;gap:5px;padding:7px 10px;border-radius:14px}
+  .nav-item svg{width:18px;height:18px;flex:none}
   .nav-item.active svg{transform:none}
   .nav-item::after{bottom:3px;height:2px}
+}
+/* 五个标签在窄屏上放不下横排图标+文字：只让当前标签显示文字，其余收成纯图标。
+   宽度变化后 updateNavSlider() 会在点击时重新量，滑块位置不会错。 */
+@media(max-width:600px){
+  .nav-item span{display:none}
+  .nav-item.active span{display:inline}
+  .nav-item{padding:8px 11px}
 }
 @media(max-width:820px){
   #idiomContainer{max-width:760px}
@@ -894,8 +901,239 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
   .idiom-control-grid{grid-template-columns:40px 1fr}.idiom-field-select{grid-column:1/-1}.idiom-actions{grid-column:1/-1}
 }
 
+/* =========================================
+   申论答题卡视图
+   红格子（--rule/--grid）是刻意保留的原色：它是答题卡的本体特征。
+   做法跟成语表卡片一致——把它画在一张纯白纸卡上，用白纸把印刷红和
+   奶油玻璃背景隔开，所以在燕麦奶油和雾岛薄荷两个主题下都不打架。
+   格子几何与楷体全部收在 #composeView 作用域内，不污染全站字体。
+   ========================================= */
+#composeContainer{max-width:960px}
+#composeView{
+  --cell:30px;--fs:21px;--gap:9px;
+  --rule:#c0302b;--grid:#d4564f;--ink:#1a1a1a;--paper-meta:#6b6f73;
+  --kai:"FZKai-Z03S","方正楷体简体","方正楷体_GBK","FZKTJW",
+        "LXGW WenKai","霞鹜文楷",
+        "Kaiti SC",KaiTi,STKaiti,"楷体","楷体_GB2312",
+        "TW-Kai","DFKai-SB","BiauKai","AR PL UKai CN",serif;
+}
+
+/* ----- 工具条（复用玻璃工具条语言，同 .idiom-toolbar） ----- */
+.sl-toolbar{
+  margin:12px 18px 8px;padding:10px;
+  border:1px solid rgba(255,255,255,0.48);border-top-color:rgba(255,255,255,0.72);
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.10));
+  box-shadow:0 14px 34px -24px rgba(var(--shadow-rgb),0.22),inset 0 1px 0 rgba(255,255,255,0.68);
+  display:flex;flex-direction:column;gap:8px;
+}
+.sl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.sl-spacer{flex:1 1 auto;min-width:0}
+/* 与 .idiom-btn 同一套视觉；单独命名是为了让这一页的样式可以独立演进 */
+.sl-btn{
+  height:40px;padding:0 14px;border:1px solid rgba(255,255,255,.58);border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.14));
+  color:var(--text-secondary);font:inherit;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72),0 7px 18px -14px rgba(var(--shadow-rgb),.2);
+  transition:all .25s cubic-bezier(.16,1,.3,1)
+}
+.sl-btn:hover:not(:disabled){transform:translateY(-2px);color:var(--text);border-color:rgba(var(--primary-rgb),.34);box-shadow:0 10px 22px -14px rgba(var(--shadow-rgb),.26),inset 0 1px 0 rgba(255,255,255,.8)}
+.sl-btn:active:not(:disabled){transform:translateY(0) scale(.98)}
+.sl-btn:disabled{opacity:.38;cursor:default}
+.sl-btn.is-danger:hover:not(:disabled){color:var(--danger);border-color:rgba(var(--danger-rgb),.45)}
+.sl-btn:focus-visible,.sl-num:focus-visible,.sl-range:focus-visible{outline:2px solid rgba(var(--primary-rgb),.75);outline-offset:2px}
+
+/* 分组胶囊：把「上限」「字号」「格子」这类带标签的控件包起来 */
+.sl-group{
+  display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;
+  border:1px solid rgba(255,255,255,.52);border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.66);
+}
+.sl-group>label{font-size:11.5px;font-weight:600;color:var(--text-muted);white-space:nowrap;letter-spacing:.02em}
+.sl-num{
+  width:58px;height:26px;border:1px solid rgba(255,255,255,.6);border-radius:9px;
+  background:rgba(255,255,255,.5);color:var(--text);font:inherit;font-size:12.5px;font-weight:600;
+  text-align:center;outline:none;font-variant-numeric:tabular-nums;
+}
+.sl-range{width:88px;accent-color:var(--primary);cursor:pointer}
+.sl-group i{font-style:normal;font-size:11.5px;font-weight:600;color:var(--text-secondary);font-variant-numeric:tabular-nums;width:19px;text-align:right}
+
+/* 字数：主容器 header 右侧的计数药丸 */
+.sl-count{
+  display:flex;align-items:baseline;gap:3px;padding:7px 15px;border-radius:14px;
+  border:1px solid rgba(255,255,255,.55);
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.14));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 16px -12px rgba(var(--shadow-rgb),.2);
+  font-variant-numeric:tabular-nums;color:var(--text-secondary);font-size:12px;font-weight:600;
+  transition:border-color .3s ease,color .3s ease;
+}
+.sl-count b{font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.sl-count.is-over{border-color:rgba(var(--danger-rgb),.6);color:var(--danger)}
+.sl-count.is-over b{color:var(--danger)}
+.sl-status{font-size:11.5px;color:var(--text-muted);white-space:nowrap;letter-spacing:.02em}
+.sl-status.is-bad{color:var(--danger)}
+.sl-fontstate{font-size:11.5px;color:var(--text-secondary);white-space:nowrap;max-width:270px;overflow:hidden;text-overflow:ellipsis}
+.sl-fontstate.is-bad{color:var(--danger)}
+/* 楷体预览：让人一眼看出当前用的是不是楷体 */
+.sl-swatch{
+  font-family:var(--kai);font-size:17px;line-height:1;padding:5px 11px;border-radius:11px;
+  background:#fff;color:var(--ink);border:1px solid rgba(var(--shadow-rgb),.08);
+  box-shadow:0 5px 14px -10px rgba(var(--shadow-rgb),.3);white-space:nowrap;
+}
+
+/* ----- 纸面 ----- */
+/* 滚动容器是整个 #composeContainer，不是纸面：滚轮要把标题和工具条一起带走，
+   往下写的时候能腾出全部竖向空间。横向溢出（把格子拖大时）只让格子区自己滚。 */
+/* 不用 scroll-behavior:smooth：写到底边时光标跟随需要立刻到位，平滑动画会发飘 */
+#composeContainer{overflow-y:auto;overflow-x:hidden}
+#composeContainer>.header,#composeContainer>.sl-toolbar{flex:none}
+#composeContainer::-webkit-scrollbar{width:9px;height:9px}
+#composeContainer::-webkit-scrollbar-track{background:transparent}
+#composeContainer::-webkit-scrollbar-thumb{background:rgba(var(--primary-rgb),.22);border-radius:999px;border:2px solid transparent;background-clip:padding-box}
+#composeContainer::-webkit-scrollbar-thumb:hover{background:rgba(var(--primary-rgb),.36);background-clip:padding-box}
+.sl-main{flex:none;padding:0 18px 16px}
+.sl-sheet{
+  background:#fff;border-radius:20px;padding:26px 22px 32px;
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 20px 46px -30px rgba(var(--shadow-rgb),.32),inset 0 1px 0 rgba(255,255,255,.9);
+  font-family:var(--kai);color:var(--ink);
+}
+.sl-sheet-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding:0 8px 7px;margin-bottom:4px}
+.sl-sheet-title{font-size:24px;letter-spacing:.5em;font-weight:700;padding-left:.5em}
+.sl-sheet-sub{font-size:12.5px;color:var(--paper-meta);letter-spacing:.1em;padding-bottom:3px;white-space:nowrap}
+.sl-notice{font-size:12px;color:#444;line-height:1.9;border-bottom:1px solid #999;padding:8px 8px 9px;margin-bottom:16px}
+.sl-notice span{margin-right:1.6em}
+.sl-qhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;font-size:15.5px;margin:0 0 12px 10px}
+.sl-qno{font-weight:700}
+.sl-qlimit{font-size:12.5px;color:var(--paper-meta)}
+
+/* ----- 红格子：以下颜色与几何均为原答题卡原样保留 ----- */
+/* safe center：格子被拖宽到超出纸面时，普通 center 会让左侧溢出部分滚不到 */
+.sl-gridwrap{display:flex;justify-content:center;justify-content:safe center;padding:0 46px;overflow-x:auto}
+.sl-gridwrap::-webkit-scrollbar{height:8px}
+.sl-gridwrap::-webkit-scrollbar-track{background:transparent}
+.sl-gridwrap::-webkit-scrollbar-thumb{background:rgba(var(--primary-rgb),.2);border-radius:999px}
+.sl-frame{position:relative;border:2.5px solid var(--rule);padding:10px 12px;background:#fff}
+.sl-grid{cursor:text}
+.sl-row{display:flex;position:relative;border:1px solid var(--grid);margin-bottom:var(--gap)}
+.sl-row:last-child{margin-bottom:0}
+.sl-c{
+  width:var(--cell);height:var(--cell);
+  border-right:1px solid var(--grid);
+  display:flex;align-items:center;justify-content:center;
+  font-size:var(--fs);line-height:1;position:relative;user-select:none;
+  scroll-margin:16px 0;overflow:hidden;
+}
+.sl-c:last-of-type{border-right:none}
+.sl-c .sl-half{font-size:calc(var(--fs)*.67);letter-spacing:0;line-height:1;display:block}
+.sl-c.is-sq{justify-content:flex-start}
+.sl-c .sl-wrap{display:flex;align-items:baseline;white-space:nowrap;transform-origin:left center}
+.sl-c .sl-wrap .sl-p{font-size:calc(var(--fs)*.72);margin-left:-3px}
+.sl-c.is-over{background:#fbe9e8}
+.sl-c.is-caret::after{
+  content:"";position:absolute;top:3px;bottom:3px;width:2px;
+  background:var(--ink);left:var(--co,2px);animation:slBlink 1.05s step-end infinite;
+}
+@keyframes slBlink{50%{opacity:0}}
+.sl-rnum{position:absolute;right:-44px;top:0;height:var(--cell);display:flex;align-items:center;font-family:"Inter",system-ui,sans-serif;font-size:11px;color:#a05a56}
+.sl-limitline{position:absolute;left:-8px;right:-8px;height:0;border-top:2px dashed var(--rule);pointer-events:none}
+.sl-limitline span{position:absolute;right:-46px;top:-9px;background:#fff;padding:0 3px;font-family:"Inter",system-ui,sans-serif;font-size:11px;color:var(--rule)}
+
+/* 隐形输入框：真正接收键盘和输入法的元素 */
+.sl-ta{
+  position:absolute;opacity:0;z-index:2;
+  width:var(--cell);height:var(--cell);
+  border:none;outline:none;resize:none;overflow:hidden;
+  background:transparent;color:transparent;caret-color:transparent;
+  font-size:var(--fs);padding:0;
+}
+.sl-ime{
+  position:absolute;z-index:6;display:none;
+  background:#fffbe6;border:1px solid #d0b25a;border-radius:6px;
+  padding:2px 7px;font-size:14px;white-space:nowrap;color:#5a4a1f;
+  font-family:"Inter","Noto Sans SC",system-ui,sans-serif;
+  box-shadow:0 6px 16px -8px rgba(0,0,0,.3);
+}
+.sl-foot{margin:12px 8px 0;font-family:"Inter","Noto Sans SC",system-ui,sans-serif;font-size:11.5px;color:var(--text-muted);line-height:1.85}
+
+/* ----- 全屏书写模式 -----
+   .view.active 的 viewEnter 动画是 forwards 的，结束后 transform 仍是
+   translateY(0) scale(1)（不是 none），会成为 fixed 后代的包含块，
+   容器就钉不到视口上 —— 所以这里必须把视图层的动画和 transform 一起清掉。 */
+body.sl-fullscreen{overflow:hidden}
+body.sl-fullscreen .bottom-nav,
+body.sl-fullscreen .theme-toggle,
+body.sl-fullscreen .theme-panel,
+body.sl-fullscreen .noise,
+body.sl-fullscreen .ambient-light,
+body.sl-fullscreen .view:not(#composeView){display:none!important}
+body.sl-fullscreen #composeView{animation:none!important;transform:none!important;position:static}
+body.sl-fullscreen #composeContainer{
+  position:fixed;inset:0;z-index:200;
+  width:100vw;height:100vh;max-width:none;
+  border:0;border-radius:0;box-shadow:none;
+  background:var(--bg);
+}
+body.sl-fullscreen .sl-toolbar{margin:12px 22px 8px}
+body.sl-fullscreen .sl-main{padding:0 22px 28px}
+body.sl-fullscreen .sl-sheet{border-radius:14px}
+/* 原生全屏下祖先不参与渲染，容器要自带不透明底色 */
+#composeContainer:fullscreen{background:var(--bg)}
+.sl-btn.is-on{
+  color:var(--text);border-color:rgba(var(--primary-rgb),.5);
+  background:linear-gradient(180deg,rgba(var(--primary-rgb),.26),rgba(var(--primary-rgb),.12));
+}
+
+@media(max-width:1010px){
+  #composeView{--cell:26px;--fs:18px;--gap:7px}
+  .sl-gridwrap{padding:0 44px}
+}
+@media(max-width:860px){
+  #composeView{--cell:22px;--fs:15px;--gap:6px}
+  .sl-sheet{padding:20px 14px 24px;border-radius:16px}
+  .sl-sheet-title{font-size:19px;letter-spacing:.35em}
+  .sl-toolbar{margin:10px 16px 8px;padding:9px;border-radius:16px}
+  .sl-main{padding:0 16px 18px}
+}
+/* 一行 25 格是答题卡的硬格式，手机上放不下可读的字号。默认按可用宽度铺满，
+   保证整行完整可见（回看、数字数用）；要放大到能舒服写字就拖「格子」滑块，
+   此时纸面横向滚动。行号槽在手机上太占宽度，直接隐藏。 */
+@media(max-width:700px){
+  #composeView{--cell:calc((100vw - 88px)/25);--fs:calc((100vw - 88px)/25*0.68);--gap:4px}
+  .sl-gridwrap{padding:0}
+  .sl-rnum{display:none}
+  .sl-frame{padding:6px 5px;border-width:2px}
+  .sl-limitline{left:-4px;right:-4px}
+  .sl-limitline span{right:auto;left:0;top:-13px;font-size:10px}
+  .sl-sheet{padding:16px 10px 20px}
+  .sl-sheet-sub,.sl-notice{display:none}
+  .sl-btn{height:36px;padding:0 11px;font-size:11px}
+  .sl-group{height:36px;padding:0 10px}
+  .sl-swatch{display:none}
+  .sl-foot{font-size:11px}
+  /* 手机全屏时边距要比桌面收紧，否则比普通模式还窄，白白浪费宽度 */
+  body.sl-fullscreen .sl-toolbar{margin:10px 12px 8px}
+  body.sl-fullscreen .sl-main{padding:0 12px 22px}
+}
+
+/* 打印：只留纸面，去掉一切界面元素与光标 */
+@media print{
+  body{background:#fff;padding:0}
+  .noise,.ambient-light,.bottom-nav,.theme-toggle,.theme-panel,.cursor-glow,
+  #composeView .sl-toolbar,#composeView .sl-foot,#composeView .header{display:none!important}
+  .view:not(#composeView){display:none!important}
+  #composeView .container{height:auto;max-width:none;border:0;box-shadow:none;background:none;overflow:visible}
+  #composeView .sl-main{overflow:visible;padding:0}
+  #composeView .sl-sheet{border:0;border-radius:0;box-shadow:none;padding:0}
+  #composeView .sl-c.is-caret::after{display:none}
+  #composeView .sl-c.is-over{background:none}
+  #composeView .sl-row{break-inside:avoid}
+}
+
 </style>
 <link rel="stylesheet" href="score-history.css">
+<link rel="stylesheet" href="cloud-sync.css">
 </head>
 <body>
 <div class="noise"></div>
@@ -1188,6 +1426,90 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
   </div>
 </div>
 
+<!-- ========== 申论答题卡视图 ========== -->
+<div class="view" id="composeView">
+  <div class="container" id="composeContainer">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;position:relative;z-index:1">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+          </svg>
+        </div>
+        <div class="brand-text"><h1>申论答题卡</h1><p>方格之内，字字有声</p></div>
+      </div>
+      <div class="sl-count" id="slCount"><b>0</b><span>/ 1200 字</span></div>
+    </div>
+
+    <section class="sl-toolbar" aria-label="答题卡工具">
+      <div class="sl-tools">
+        <span class="sl-group">
+          <label for="slLimit">字数上限</label>
+          <input class="sl-num" type="number" id="slLimit" value="1200" min="100" max="3000" step="50">
+        </span>
+        <button class="sl-btn" id="slFullscreen" type="button" title="全屏书写（Esc 退出）" aria-pressed="false">全屏</button>
+        <span class="sl-spacer"></span>
+        <span class="sl-status" id="slSaved">已存</span>
+        <button class="sl-btn" id="slUndo" type="button" title="Ctrl+Z">撤销</button>
+        <button class="sl-btn" id="slRedo" type="button" title="Ctrl+Shift+Z">重做</button>
+        <button class="sl-btn" id="slCopy" type="button">复制全文</button>
+        <button class="sl-btn" id="slDownload" type="button">导出 txt</button>
+        <button class="sl-btn is-danger" id="slClear" type="button">清空</button>
+      </div>
+      <div class="sl-tools">
+        <span class="sl-fontstate" id="slFontState">字体检测中…</span>
+        <span class="sl-swatch">永和九年·岁在癸丑</span>
+        <button class="sl-btn" id="slFontPick" type="button">载入字体</button>
+        <button class="sl-btn" id="slFontReset" type="button" hidden>还原字体</button>
+        <input type="file" id="slFontFile" accept=".ttf,.otf,.woff,.woff2" hidden>
+        <span class="sl-spacer"></span>
+        <span class="sl-group">
+          <label for="slFontSize">字号</label>
+          <input class="sl-range" type="range" id="slFontSize" min="7" max="40" step="1" value="21">
+          <i id="slFontSizeVal">21</i>
+        </span>
+        <span class="sl-group">
+          <label for="slCellSize">格子</label>
+          <input class="sl-range" type="range" id="slCellSize" min="10" max="56" step="1" value="30">
+          <i id="slCellSizeVal">30</i>
+        </span>
+        <button class="sl-btn" id="slSizeReset" type="button">默认</button>
+      </div>
+    </section>
+
+    <main class="sl-main" id="slMain">
+      <div class="sl-sheet">
+        <div class="sl-sheet-head">
+          <div class="sl-sheet-title">申论答题卡</div>
+          <div class="sl-sheet-sub">浙江省公务员录用考试</div>
+        </div>
+        <div class="sl-notice">
+          <span>一、答题一律使用黑色字迹的钢笔或签字笔，在指定区域内作答。</span>
+          <span>二、超出答题区域或答在其他题号下的答案无效。</span>
+          <span>三、保持卡面清洁，不要折叠、破损。</span>
+        </div>
+        <div class="sl-qhead">
+          <span class="sl-qno">三、（本题 40 分）</span>
+          <span class="sl-qlimit" id="slQLimit">总字数 1000—1200 字</span>
+        </div>
+        <div class="sl-gridwrap">
+          <div class="sl-frame" id="slFrame">
+            <div class="sl-grid" id="slGrid"></div>
+            <div class="sl-limitline" id="slLimitLine" hidden><span></span></div>
+            <textarea class="sl-ta" id="slTextarea" spellcheck="false" autocomplete="off"
+              autocorrect="off" autocapitalize="off" aria-label="申论答题内容"></textarea>
+            <div class="sl-ime" id="slIme"></div>
+          </div>
+        </div>
+        <p class="sl-foot">
+          点格子开始写。回车换段，段首自己空两格。Ctrl+Z 撤销，Ctrl+Shift+Z 重做。<br>
+          字数＝占格字位数（挤压的标点照算一位）。半角字符两个占一格，空格一个占一格；句末标点不落行首，自动挤进上一行末格；前引号、前括号不落行末，自动推到下一行。
+        </p>
+      </div>
+    </main>
+  </div>
+</div>
+
 <nav class="idiom-mark-menu" id="idiomMarkMenu" aria-label="成语标记" hidden>
   <button type="button" data-color="yellow"><span class="idiom-swatch idiom-swatch-yellow"></span>黄色 · 重点</button>
   <button type="button" data-color="red"><span class="idiom-swatch idiom-swatch-red"></span>红色 · 易错</button>
@@ -1214,6 +1536,10 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
   <button class="nav-item" data-view="scoreHistoryView" id="navScoreHistory">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h17"/><path d="m7 15 3-4 3 2 5-7"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="11" r="1"/><circle cx="13" cy="13" r="1"/><circle cx="18" cy="6" r="1"/></svg>
     <span>成绩记录</span>
+  </button>
+  <button class="nav-item" data-view="composeView" id="navCompose">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    <span>申论</span>
   </button>
 </nav>
 
@@ -6350,6 +6676,8 @@ let tiltX=0,tiltY=0,tiltFrame=0;
 function applyTilt(){
   tiltFrame=0;
   const container=document.querySelector('.view.active .container');if(!container)return;
+  /* 答题卡不参与鼠标倾斜：写字时纸面跟着鼠标转会看不清格子，光标定位也会跟着漂。 */
+  if(container.id==='composeContainer'){container.style.transform='';return;}
   const rect=container.getBoundingClientRect();
   const cx=rect.left+rect.width/2;const cy=rect.top+rect.height/2;
   const dx=(tiltX-cx)/(rect.width/2);const dy=(tiltY-cy)/(rect.height/2);
@@ -6433,6 +6761,9 @@ document.querySelectorAll('.nav-item').forEach(btn=>{
       }
       if(viewId==='idiomView'){ setTimeout(()=>{ if(typeof window.idiomAppRefresh==='function')window.idiomAppRefresh(); },50); }
       if(viewId==='scoreHistoryView'){ setTimeout(()=>{ if(typeof window.scoreHistoryRefresh==='function')window.scoreHistoryRefresh(); },50); }
+      /* 答题卡靠 getBoundingClientRect 定位光标和限字线，而隐藏视图是 content-visibility:hidden，
+         量出来的矩形全是废值 —— 必须等视图真正可见后再重排一次。 */
+      if(viewId==='composeView'){ setTimeout(()=>{ if(typeof window.composeRefresh==='function')window.composeRefresh(); },50); }
     },180);
   });
 });
@@ -6621,6 +6952,8 @@ document.addEventListener('click',()=>{$('timerContextMenu').style.display='none
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===document.body){e.preventDefault();timerBtn.click();}});
 
 /* 初始化 */
+/* 云同步拉取后要让计时记录重新从 localStorage 读一遍 */
+window.timerRecordsRefresh=function(){records=loadRecords();renderRecords();};
 setInterval(updateClock,1000);updateClock();renderRecords();updateTimerControls();
 const initContainer=document.querySelector('.view.active .container');
 if(initContainer){initContainer.classList.add('entering');setTimeout(()=>initContainer.classList.remove('entering'),450);}
@@ -6859,7 +7192,506 @@ window.idiomAppRefresh=function(){
 buildRows();render();
 })();
 
+
+/* =========================================
+   申论答题卡 · 字体 IIFE
+   --kai 只写在 #composeView 上，不覆盖全站的 Inter / Noto Sans SC。
+   ========================================= */
+(function(){
+const view=document.getElementById('composeView');
+if(!view)return;
+const BASE='"LXGW WenKai","霞鹜文楷","Kaiti SC",KaiTi,STKaiti,"楷体","楷体_GB2312","TW-Kai","DFKai-SB","BiauKai","AR PL UKai CN",serif';
+const CANDIDATES=[
+  ['FZKai-Z03S','方正楷体简体'],['方正楷体简体','方正楷体简体'],['方正楷体_GBK','方正楷体_GBK'],
+  ['LXGW WenKai','霞鹜文楷'],
+  ['Kaiti SC','系统楷体 Kaiti SC'],['KaiTi','系统楷体 KaiTi'],['STKaiti','系统楷体 STKaiti'],
+  ['楷体','系统楷体'],['TW-Kai','TW-Kai'],['DFKai-SB','标楷体'],['AR PL UKai CN','文鼎楷体']
+];
+const stateEl=document.getElementById('slFontState');
+const pick=document.getElementById('slFontPick'), fileIn=document.getElementById('slFontFile');
+const resetBtn=document.getElementById('slFontReset');
+let userLoaded=false;
+
+const cv=document.createElement('canvas'), cx=cv.getContext('2d');
+/* 探针必须含拉丁字母：汉字在所有中文字体里都是等宽全角，纯汉字探针量出来的宽度
+   永远相同（实测 720 vs 720），宽度法完全失效；掺入拉丁字母后差异立刻显现（408 vs 486）。 */
+const PROBE='永和九年岁在癸丑WMilg@#%01';
+function widthOf(f){ cx.font='48px '+f; return cx.measureText(PROBE).width; }
+function has(name){
+  const base=['monospace','sans-serif','serif'].map(widthOf);
+  const test=['monospace','sans-serif','serif'].map(g=>widthOf('"'+name+'",'+g));
+  return test.some((w,i)=>Math.abs(w-base[i])>0.5);
+}
+function detect(){
+  if(userLoaded) return;
+  for(const [n,label] of CANDIDATES){
+    if(has(n)){ stateEl.textContent='当前字体 · '+label; stateEl.classList.remove('is-bad'); return; }
+  }
+  stateEl.textContent='没找到楷体，正由宋体顶替 —— 可载入一个字体文件';
+  stateEl.classList.add('is-bad');
+}
+function applyUser(name){
+  view.style.setProperty('--kai','"SlUserKai",'+BASE);
+  stateEl.textContent='本地字体 · '+name;
+  stateEl.classList.remove('is-bad');
+  resetBtn.hidden=false; userLoaded=true;
+}
+function db(){ return new Promise((res,rej)=>{ const r=indexedDB.open('slfont',1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('f'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function put(rec){ const d=await db(); return new Promise(r=>{ const t=d.transaction('f','readwrite'); t.objectStore('f').put(rec,'font'); t.oncomplete=r; }); }
+async function get(){ try{ const d=await db(); return new Promise(r=>{ const t=d.transaction('f','readonly'); const q=t.objectStore('f').get('font'); q.onsuccess=()=>r(q.result||null); q.onerror=()=>r(null); }); }catch(e){ return null; } }
+async function del(){ try{ const d=await db(); return new Promise(r=>{ const t=d.transaction('f','readwrite'); t.objectStore('f').delete('font'); t.oncomplete=r; }); }catch(e){} }
+async function load(buf,name,store){
+  try{
+    const ff=new FontFace('SlUserKai', buf.slice(0));
+    await ff.load(); document.fonts.add(ff); applyUser(name);
+    if(store) await put({buf,name});
+    if(typeof window.composeRefresh==='function') window.composeRefresh();
+  }catch(e){
+    stateEl.textContent='这个字体文件浏览器读不了，换 .ttf 或 .otf 试试';
+    stateEl.classList.add('is-bad');
+  }
+}
+pick.addEventListener('click',()=>fileIn.click());
+fileIn.addEventListener('change',async e=>{ const f=e.target.files[0]; if(!f) return; load(await f.arrayBuffer(), f.name, true); fileIn.value=''; });
+resetBtn.addEventListener('click',async ()=>{
+  await del(); view.style.removeProperty('--kai');
+  resetBtn.hidden=true; userLoaded=false; detect();
+  if(typeof window.composeRefresh==='function') window.composeRefresh();
+});
+(async ()=>{
+  const saved=await get();
+  if(saved){ load(saved.buf, saved.name, false); return; }
+  detect();
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(detect);
+  setTimeout(detect,2500);
+})();
+})();
+
+
+/* =========================================
+   申论答题卡 IIFE
+   排版引擎（build / paintCell / 避头尾规则 / 字数口径）与原答题卡完全一致，未作改动。
+   ========================================= */
+(function(){
+const view=document.getElementById('composeView');
+if(!view)return;
+
+const COLS=25, KEY='study-compose-sheet.v1', SZKEY='study-compose-size.v1';
+
+const grid=document.getElementById('slGrid'), frame=document.getElementById('slFrame');
+const main=document.getElementById('slMain');
+const scroller=document.getElementById('composeContainer');
+const ta=document.getElementById('slTextarea'), ime=document.getElementById('slIme');
+const limitline=document.getElementById('slLimitLine');
+const countEl=document.getElementById('slCount');
+const limIn=document.getElementById('slLimit'), qlimit=document.getElementById('slQLimit');
+const savedEl=document.getElementById('slSaved');
+
+let limit=1200, composing=false, cells=[], rows=[], totalRows=0;
+const HALF=c=>c>' '&&c<='~';   /* 空格不配对，独占一格 */
+
+/* 不能出现在行首（句末点号、后括号、后引号等） */
+const NO_HEAD=new Set([
+  '。','，','、','；','：','？','！','·','…','—','～',
+  '）','〕','〉','》','」','』','】','〗','］','｝',
+  '”','’','〞','%','‰','℃'
+]);
+/* 不能出现在行末（前括号、前引号） */
+const NO_TAIL=new Set([
+  '（','〔','〈','《','「','『','【','〖','［','｛',
+  '“','‘','〝','￥','＄','＃'
+]);
+
+function limitText(){
+  return limit>=1000 ? '总字数 '+(limit-200)+'—'+limit+' 字' : '不超过 '+limit+' 字';
+}
+
+function build(text){
+  const units=[]; let i=0;
+  while(i<text.length){
+    const ch=text[i];
+    if(ch==='\n'){ units.push({br:1, idxs:[i]}); i++; }
+    else if(HALF(ch)){
+      const idxs=[i]; let s=ch;
+      if(i+1<text.length&&HALF(text[i+1])){ s+=text[i+1]; idxs.push(i+1); i+=2; } else i++;
+      units.push({s, half:1, idxs});
+    }else{ units.push({s:ch, idxs:[i]}); i++; }
+  }
+  const out=[]; const posOf=new Array(text.length+1);
+  const col=()=>out.length%COLS;
+  let lastContent=false, justBroke=false;
+  for(const it of units){
+    if(it.br){
+      posOf[it.idxs[0]]=out.length;
+      if(out.length%COLS!==0){ while(out.length%COLS!==0) out.push({pad:1}); }
+      else if(!lastContent){ for(let k=0;k<COLS;k++) out.push({pad:1}); }
+      lastContent=false; justBroke=true;
+      continue;
+    }
+    if(!justBroke && col()===0 && out.length>0 && !it.half && NO_HEAD.has(it.s)){
+      const prev=out[out.length-1];
+      if(prev && !prev.pad && (prev.sq?prev.sq.length:0)<2){
+        prev.sq=prev.sq||[]; prev.sq.push(it.s);
+        it.idxs.forEach(x=>posOf[x]=out.length-1);
+        continue;
+      }
+    }
+    if(col()===COLS-1 && !it.half && NO_TAIL.has(it.s)) out.push({pad:1});
+    it.idxs.forEach(x=>posOf[x]=out.length);
+    out.push({s:it.s, half:it.half});
+    lastContent=true; justBroke=false;
+  }
+  posOf[text.length]=out.length;
+  let uc=0; for(const it of units) if(!it.br) uc++;
+  return {out,posOf,uc};
+}
+
+function rowsNeeded(){ return Math.ceil(limit*1.18/COLS)+2; }
+
+let dirtyAll=true, prevLen=0, overMark=-1, prevCaret=null;
+
+function ensureGrid(minCells){
+  const need=Math.max(rowsNeeded(), Math.ceil((minCells||0)/COLS)+2);
+  if(need===totalRows) return;
+  totalRows=need; grid.innerHTML=''; cells=[]; rows=[];
+  dirtyAll=true; overMark=-1; prevCaret=null;
+  const frag=document.createDocumentFragment();
+  for(let r=0;r<need;r++){
+    const row=document.createElement('div'); row.className='sl-row';
+    for(let c=0;c<COLS;c++){
+      const d=document.createElement('div'); d.className='sl-c'; d.dataset.i=r*COLS+c;
+      row.appendChild(d); cells.push(d);
+    }
+    const n=document.createElement('span'); n.className='sl-rnum';
+    n.textContent=(r%4===3)?String((r+1)*COLS):'';
+    row.appendChild(n); frag.appendChild(row); rows.push(row);
+  }
+  grid.appendChild(frag);
+}
+
+function paintCell(c,src){
+  const sig = (!src||src.pad) ? '' :
+    (src.half?'~':'') + src.s + (src.sq?'|'+src.sq.join(''):'');
+  if(c.dataset.sig===sig) return;
+  c.dataset.sig=sig;
+  c.className='sl-c'; c.textContent='';
+  if(!sig) return;
+  if(src.half){
+    const sp=document.createElement('span'); sp.className='sl-half'; sp.textContent=src.s;
+    c.appendChild(sp); return;
+  }
+  if(src.sq && src.sq.length){
+    c.classList.add('is-sq');
+    const w=document.createElement('span'); w.className='sl-wrap';
+    const m=document.createElement('span'); m.textContent=src.s; w.appendChild(m);
+    src.sq.forEach(p=>{ const s=document.createElement('span'); s.className='sl-p'; s.textContent=p; w.appendChild(s); });
+    if(src.sq.length>1) w.style.transform='scaleX(.8)';
+    c.appendChild(w); return;
+  }
+  c.textContent=src.s;
+}
+
+function render(){
+  const text=ta.value; const {out,posOf,uc}=build(text); ensureGrid(out.length);
+
+  const upto = dirtyAll ? cells.length : Math.max(out.length, prevLen);
+  for(let i=0;i<upto&&i<cells.length;i++) paintCell(cells[i], out[i]);
+  prevLen=out.length; dirtyAll=false;
+
+  if(overMark!==limit){
+    for(let i=0;i<cells.length;i++) cells[i].classList.toggle('is-over', i>=limit);
+    overMark=limit;
+  }
+  if(prevCaret){ prevCaret.classList.remove('is-caret'); prevCaret.style.removeProperty('--co'); prevCaret=null; }
+
+  let cp=ta.selectionStart; if(cp>text.length) cp=text.length;
+  const ci=posOf[cp];
+  if(ci!==undefined&&cells[ci]){
+    const cell=cells[ci]; prevCaret=cell;
+    let ord=0; for(let q=cp-1;q>=0&&posOf[q]===ci;q--) ord++;
+    cell.classList.add('is-caret');
+    const cw=cell.offsetWidth||30;
+    cell.style.setProperty('--co', Math.min(2+ord*cw*0.31, cw-4).toFixed(1)+'px');
+    const r=cell.getBoundingClientRect(), f=frame.getBoundingClientRect();
+    ta.style.left=(r.left-f.left)+'px'; ta.style.top=(r.top-f.top)+'px';
+    ime.style.left=(r.left-f.left)+'px'; ime.style.top=Math.max(2,r.top-f.top-27)+'px';
+    /* 滚动容器是整个 #composeContainer（不再是窗口，也不再是纸面），越界判断跟着换 */
+    const m=scroller.getBoundingClientRect();
+    if(m.height>0 && (r.top<m.top+8 || r.bottom>m.bottom-8)) cell.scrollIntoView({block:'nearest'});
+  }
+  countEl.innerHTML='<b>'+uc+'</b><span>/ '+limit+' 字</span>';
+  countEl.classList.toggle('is-over', uc>limit);
+
+  const limRow=Math.ceil(limit/COLS);
+  if(limRow<=totalRows&&rows[limRow-1]){
+    const r=rows[limRow-1].getBoundingClientRect(), f=frame.getBoundingClientRect();
+    limitline.hidden=false;
+    limitline.style.top=(r.bottom-f.top+4)+'px';
+    limitline.firstElementChild.textContent=limit;
+  }else limitline.hidden=true;
+  save();
+}
+
+/* 字号 / 格子大小 —— 变量写在 #composeView 上，作用域不外溢 */
+const fsIn=document.getElementById('slFontSize'), csIn=document.getElementById('slCellSize');
+const fsV=document.getElementById('slFontSizeVal'), csV=document.getElementById('slCellSizeVal');
+const clampNum=(v,lo,hi,dft)=>Number.isFinite(v)?Math.min(hi,Math.max(lo,v)):dft;
+let szSaveT=null;
+function applySize(fs,cs,store){
+  fs=clampNum(fs,7,40,21); cs=clampNum(cs,10,56,30);
+  view.style.setProperty('--fs', fs+'px');
+  view.style.setProperty('--cell', cs+'px');
+  fsIn.value=fs; csIn.value=cs; fsV.textContent=fs; csV.textContent=cs;
+  if(store){
+    clearTimeout(szSaveT);            /* 拖动时每帧写 localStorage 会卡，改成防抖 */
+    szSaveT=setTimeout(()=>{ try{ localStorage.setItem(SZKEY, fs+','+cs); }catch(e){} },200);
+  }
+  requestAnimationFrame(render);
+}
+fsIn.addEventListener('input',()=>applySize(+fsIn.value,+csIn.value,true));
+csIn.addEventListener('input',()=>applySize(+fsIn.value,+csIn.value,true));
+document.getElementById('slSizeReset').addEventListener('click',()=>{
+  view.style.removeProperty('--fs'); view.style.removeProperty('--cell');
+  try{ localStorage.removeItem(SZKEY); }catch(e){}
+  syncSizeInputs(); requestAnimationFrame(render);
+});
+function hasSavedSize(){ try{ return !!localStorage.getItem(SZKEY); }catch(e){ return false; } }
+/* 没有保存过尺寸时，滑块要跟当前断点下的 CSS 默认值对齐，否则显示 30 实际是 11。
+   必须量真实格子：--cell 在窄屏是 calc((100vw-88px)/25)，自定义属性不会被解析成 px，
+   getPropertyValue 拿回来的是 calc 字符串，parseFloat 只会得到 NaN。 */
+function syncSizeInputs(){
+  const c=cells[0]; if(!c) return;
+  if(!c.getBoundingClientRect().width) return;   /* 视图隐藏时量不到，留给 composeRefresh */
+  const cell=c.offsetWidth;            /* 用整数宽度，避免亚像素让读数比实际少 1 */
+  const fs=Math.round(parseFloat(getComputedStyle(c).fontSize)||21);
+  fsIn.value=fs; csIn.value=cell; fsV.textContent=fs; csV.textContent=cell;
+}
+
+grid.addEventListener('mousedown',e=>{
+  const t=e.target.closest('.sl-c'); if(!t) return; e.preventDefault();
+  const target=+t.dataset.i; const {posOf}=build(ta.value);
+  let best=ta.value.length;
+  for(let p=0;p<=ta.value.length;p++){ if(posOf[p]>=target){ best=p; break; } }
+  ta.focus(); ta.setSelectionRange(best,best); render();
+});
+/* 点框内留白也要能回到输入状态，否则失焦后只能靠点格子找回来 */
+frame.addEventListener('mousedown',e=>{ if(e.target===frame){ e.preventDefault(); ta.focus(); render(); } });
+
+/* ---------- 撤销 / 重做 ---------- */
+let hist=[{t:'',s:0}], hi=0, lastPush=0, applying=false;
+const undoBtn=document.getElementById('slUndo'), redoBtn=document.getElementById('slRedo');
+const BOUNDARY=/[\s\n。，、；：？！“”（）]/;
+
+function syncBtns(){ undoBtn.disabled=(hi<=0); redoBtn.disabled=(hi>=hist.length-1); }
+
+function snap(force){
+  if(applying) return;
+  const t=ta.value, cur=hist[hi];
+  if(t===cur.t) return;
+  const now=Date.now();
+  const grew=t.length===cur.t.length+1;
+  const lastCh=grew ? t.charAt(ta.selectionStart-1) : '';
+  /* 连续快打并成一步；遇标点、空格、换行就断开，跟 Word 的分组一个意思 */
+  const merge = !force && hi>0 && (now-lastPush<700) && Math.abs(t.length-cur.t.length)<=1;
+  if(merge){ hist[hi]={t, s:ta.selectionStart}; }
+  else{
+    hist=hist.slice(0,hi+1);
+    hist.push({t, s:ta.selectionStart});
+    if(hist.length>400) hist.shift();
+    hi=hist.length-1;
+  }
+  lastPush = (lastCh && BOUNDARY.test(lastCh)) ? 0 : now;
+  syncBtns();
+}
+
+function jump(n){
+  if(n<0||n>=hist.length||n===hi) return;
+  applying=true;
+  hi=n; ta.value=hist[hi].t;
+  const c=Math.min(hist[hi].s, ta.value.length);
+  ta.setSelectionRange(c,c);
+  applying=false; lastPush=0;
+  render(); syncBtns(); ta.focus();
+}
+undoBtn.addEventListener('click',()=>jump(hi-1));
+redoBtn.addEventListener('click',()=>jump(hi+1));
+
+ta.addEventListener('keydown',e=>{
+  const mod=e.ctrlKey||e.metaKey;
+  if(!mod) return;
+  const k=e.key.toLowerCase();
+  if(k==='z'){ e.preventDefault(); e.shiftKey?jump(hi+1):jump(hi-1); }
+  else if(k==='y'){ e.preventDefault(); jump(hi+1); }
+});
+
+ta.addEventListener('compositionstart',()=>{composing=true;});
+ta.addEventListener('compositionupdate',e=>{ ime.style.display='block'; ime.textContent=e.data||''; });
+ta.addEventListener('compositionend',()=>{ composing=false; ime.style.display='none'; ime.textContent=''; snap(true); render(); });
+ta.addEventListener('input',()=>{ if(!composing){ snap(); render(); } });
+ta.addEventListener('click',()=>{ if(!composing) render(); });
+document.addEventListener('selectionchange',()=>{ if(document.activeElement===ta&&!composing) render(); });
+
+limIn.addEventListener('change',()=>{
+  limit=clampNum(+limIn.value,100,3000,1200); limIn.value=limit;
+  qlimit.textContent=limitText();
+  totalRows=0; render();
+});
+
+let saveT=null, lastSaved=0;
+function writeSave(){
+  try{
+    localStorage.setItem(KEY,JSON.stringify({t:ta.value,l:limit}));
+    savedEl.textContent='已存 '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    savedEl.classList.remove('is-bad');
+  }catch(e){ savedEl.textContent='存不了（浏览器限制）'; savedEl.classList.add('is-bad'); }
+  lastSaved=Date.now();
+}
+function save(){
+  /* 防抖 400ms，但最长 3 秒必落盘一次：一直不停打字时不能一直不存 */
+  if(Date.now()-lastSaved>3000){ clearTimeout(saveT); writeSave(); return; }
+  clearTimeout(saveT);
+  saveT=setTimeout(writeSave,400);
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'){ clearTimeout(saveT); writeSave(); } });
+window.addEventListener('pagehide',()=>{ clearTimeout(saveT); writeSave(); });
+
+try{
+  const raw=localStorage.getItem(KEY);
+  if(raw){
+    const d=JSON.parse(raw); ta.value=d.t||'';
+    hist=[{t:ta.value, s:ta.value.length}]; hi=0;
+    if(d.l){ limit=clampNum(+d.l,100,3000,1200); limIn.value=limit; }
+  }
+}catch(e){}
+qlimit.textContent=limitText();
+
+try{
+  const sz=(localStorage.getItem(SZKEY)||'').split(',');
+  if(sz.length===2 && Number.isFinite(+sz[0]) && Number.isFinite(+sz[1])) applySize(+sz[0],+sz[1],false);
+  else syncSizeInputs();
+}catch(e){ syncSizeInputs(); }
+
+document.getElementById('slCopy').addEventListener('click',async function(){
+  try{ await navigator.clipboard.writeText(ta.value); }catch(e){ ta.select(); document.execCommand('copy'); }
+  this.textContent='已复制'; setTimeout(()=>{this.textContent='复制全文';},1400);
+});
+document.getElementById('slDownload').addEventListener('click',()=>{
+  const blob=new Blob([ta.value],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); const url=URL.createObjectURL(blob);
+  a.href=url; a.download='申论_'+new Date().toISOString().slice(0,10)+'.txt';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);   /* 同步撤销会让 Firefox 直接取消下载 */
+});
+document.getElementById('slClear').addEventListener('click',()=>{
+  if(!confirm('清空当前答卷？清空后可以按撤销找回。')) return;
+  snap(true); ta.value=''; snap(true); ta.focus(); render();
+});
+
+/* ---------- 全屏书写模式 ---------- */
+const fsBtn=document.getElementById('slFullscreen');
+const isFs=()=>document.body.classList.contains('sl-fullscreen');
+
+/* 真正留给 25 个格子的净宽。必须量格子区本身而不是纸面：clientWidth 含自身 padding，
+   拿纸面去算会漏掉纸面的左右内边距（桌面 44px、手机 20px），手机上直接算溢出。 */
+function availGridWidth(){
+  const gw=document.querySelector('.sl-gridwrap');
+  if(!gw) return 0;
+  const g=getComputedStyle(gw), f=getComputedStyle(frame);
+  return gw.clientWidth
+    - parseFloat(g.paddingLeft) - parseFloat(g.paddingRight)
+    - parseFloat(f.paddingLeft) - parseFloat(f.paddingRight)
+    - parseFloat(f.borderLeftWidth) - parseFloat(f.borderRightWidth)
+    - 2;   /* 留 2px 余量：边框宽度是小数，正好铺满会被亚像素挤出 1px 横向滚动 */
+}
+/* 让一行 25 格正好铺满可用宽度；上限 56px，免得超宽屏上格子大得离谱 */
+function fitCellToWidth(){
+  const avail=availGridWidth();
+  if(avail<=0) return;
+  const cell=clampNum(Math.floor(avail/COLS),10,56,30);
+  applySize(Math.round(cell*0.7),cell,false);
+  /* 格子变大后纸面变高，竖向滚动条可能这时才出现，可用宽度会再缩一点，量一次补偿 */
+  const avail2=availGridWidth();
+  if(avail2>0 && avail2<avail){
+    const cell2=clampNum(Math.floor(avail2/COLS),10,56,30);
+    if(cell2<cell) applySize(Math.round(cell2*0.7),cell2,false);
+  }
+}
+/* 退出全屏后回到普通模式的尺寸：存过就用存的，没存过就交还给 CSS 断点默认值 */
+function restoreNormalSize(){
+  view.style.removeProperty('--fs'); view.style.removeProperty('--cell');
+  try{
+    const sz=(localStorage.getItem(SZKEY)||'').split(',');
+    if(sz.length===2 && Number.isFinite(+sz[0]) && Number.isFinite(+sz[1])){ applySize(+sz[0],+sz[1],false); return; }
+  }catch(e){}
+  syncSizeInputs(); dirtyAll=true; render();
+}
+function setFullscreen(on){
+  if(on===isFs()) return;
+  document.body.classList.toggle('sl-fullscreen',on);
+  fsBtn.textContent=on?'退出全屏':'全屏';
+  fsBtn.classList.toggle('is-on',on);
+  fsBtn.setAttribute('aria-pressed',String(on));
+  /* 同步做，不用 rAF：页面不在前台时 rAF 会被暂停，铺满宽度这一步就永远不执行。
+     读 clientWidth 本身会强制刷新布局，拿到的已经是切换后的尺寸。 */
+  if(on){ fitCellToWidth(); ta.focus({preventScroll:true}); }
+  else restoreNormalSize();
+}
+fsBtn.addEventListener('click',()=>{
+  const on=!isFs();
+  setFullscreen(on);
+  /* 顺带请求原生全屏，把浏览器工具栏那一条也让出来；不支持或被拒绝时 CSS 模式照常工作 */
+  try{
+    if(on){ if(!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{}); }
+    else if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+  }catch(e){}
+});
+/* 按 Esc 或 F11 退出原生全屏时，CSS 模式要跟着退出，否则会卡在半全屏状态 */
+document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement) setFullscreen(false); });
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && isFs() && !document.fullscreenElement) setFullscreen(false);
+});
+
+/* 云同步把云端的答卷合并下来之后调用：重新从 localStorage 读正文。
+   正在输入法组字时不能抢，否则会把半截拼音吃掉。 */
+window.composeReload=function(){
+  if(composing) return;
+  let d=null;
+  try{ d=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
+  if(!d) return;
+  const next=d.t||'';
+  if(next!==ta.value){
+    const at=Math.min(ta.selectionStart,next.length);
+    ta.value=next;
+    hist=[{t:next,s:at}]; hi=0; lastPush=0; syncBtns();
+    ta.setSelectionRange(at,at);
+  }
+  if(d.l){ limit=clampNum(+d.l,100,3000,1200); limIn.value=limit; qlimit.textContent=limitText(); totalRows=0; }
+  dirtyAll=true; render();
+};
+
+/* 视图切过来时重排一次：隐藏状态下量到的矩形不能用 */
+window.composeRefresh=function(){
+  dirtyAll=true; overMark=-1;
+  syncBtns(); render();
+  /* 视图隐藏期间窗口可能已经跨过断点；量格子要在 render 建好格子、且视图可见之后 */
+  if(!hasSavedSize()) syncSizeInputs();
+  ta.focus({preventScroll:true});
+};
+window.addEventListener('resize',()=>{
+  if(isFs()){ fitCellToWidth(); return; }              /* 全屏时窗口变了要重新铺满宽度 */
+  if(!hasSavedSize()) syncSizeInputs();                /* 断点变了，滑块跟上 */
+  if(!view.classList.contains('active')) return;       /* 隐藏时量到的矩形没意义，交给 composeRefresh */
+  dirtyAll=true; render();
+});
+
+syncBtns(); render();
+})();
+
 </script>
 <script src="score-history.js"></script>
+<script src="cloud-config.js"></script>
+<script src="sync-merge.js"></script>
+<script src="cloud-sync.js"></script>
 </body>
 </html>

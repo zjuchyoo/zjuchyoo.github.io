@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>云同步链路测试</title>
+<style>body{font:13px/1.7 system-ui;padding:20px;background:#faf8f5}pre{white-space:pre-wrap}.ok{color:#2d7d3f}.bad{color:#c0302b;font-weight:700}</style>
+</head>
+<body>
+<h3>云同步编排链路测试（假客户端，不联网）</h3>
+<pre id="out">运行中…</pre>
+
+<script>
+/* ---- 一个最小的假 Supabase 客户端：内存里存 (user_id,key) -> row ---- */
+const cloudRows=new Map();
+const rowKey=(u,k)=>u+'|'+k;
+let netLog=[];
+
+const fakeUser={id:'u-1',email:'me@example.com'};
+let authCb=null;
+
+const fakeClient={
+  from(){ return {
+    select(){ return {
+      eq(_col,uid){
+        netLog.push('SELECT');
+        const out=[];
+        cloudRows.forEach((v,kk)=>{ if(kk.startsWith(uid+'|')) out.push(v); });
+        return Promise.resolve({data:out,error:null});
+      }
+    };},
+    upsert(rows){
+      netLog.push('UPSERT x'+rows.length);
+      rows.forEach(r=>cloudRows.set(rowKey(r.user_id,r.key),
+        {key:r.key,value:r.value,updated_at:r.updated_at}));
+      return Promise.resolve({error:null});
+    }
+  };},
+  auth:{
+    getSession(){ return Promise.resolve({data:{session:{user:fakeUser}}}); },
+    onAuthStateChange(cb){ authCb=cb; return {data:{subscription:{unsubscribe(){}}}}; },
+    signOut(){ return Promise.resolve({}); }
+  }
+};
+
+window.CLOUD_CONFIG={url:'http://fake',anonKey:'fake',client:fakeClient};
+
+/* 被测模块需要的刷新钩子，这里只记录被调用过 */
+let notified=[],storageEvents=[];
+window.addEventListener('storage',e=>{if(e.key)storageEvents.push(e.key);});
+window.idiomAppRefresh=()=>notified.push('idiom');
+window.timerRecordsRefresh=()=>notified.push('timer');
+window.composeReload=()=>notified.push('compose');
+window.scoreHistoryRefresh=()=>notified.push('score');
+window.applyTheme=t=>{notified.push('theme');localStorage.setItem('study-theme',t);};
+</script>
+<script src="sync-merge.js"></script>
+<script src="cloud-sync.js"></script>
+<script>
+const out=document.getElementById('out');
+let pass=0,fail=0,lines=[];
+function eq(name,got,want){
+  const g=JSON.stringify(got),w=JSON.stringify(want);
+  if(g===w){pass++;lines.push('  ✓ '+name);}
+  else{fail++;lines.push('  ✗ '+name+'\n      得到 '+g+'\n      期望 '+w);}
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const SCORE='study-score-history.v1', SHEET='study-compose-sheet.v1', TIMER='study_records_2026_9_10';
+const rec=(id,ts,v)=>({id:id,updatedAt:ts,totalScore:v});
+
+function resetAll(){
+  localStorage.clear(); cloudRows.clear(); netLog=[]; notified=[]; storageEvents=[];
+}
+
+function fin(extra){
+  out.innerHTML=lines.join('\n')+(extra?'\n\n'+extra:'')+'\n\n'+
+    (fail?'<span class="bad">✗ 失败 '+fail+' 项</span>':'<span class="ok">✓ 全部通过</span>')+
+    '（共 '+(pass+fail)+' 项）';
+  window.__testResult={pass:pass,fail:fail};
+}
+
+(async function main(){ try{ await run(); fin(); }
+  catch(e){ fail++; lines.push('  ✗ 抛异常中断：'+(e&&e.stack||e)); fin(); } })();
+
+async function run(){
+  await sleep(400);   // 等 boot() 完成首次同步
+
+  /* ===== 1. 首次上传：本地有数据、云端空 ===== */
+  lines.push('\n1. 首次同步把本地数据推上云端');
+  resetAll();
+  localStorage.setItem(SCORE,JSON.stringify([rec('a','2026-09-01',60)]));
+  localStorage.setItem(SHEET,JSON.stringify({t:'第一版答卷',l:1200}));
+  await window.cloudSync.sync(); await sleep(50);
+  eq('云端出现两行',cloudRows.size,2);
+  eq('成绩上传正确',cloudRows.get('u-1|'+SCORE).value.v.map(r=>r.id),['a']);
+  eq('答卷上传正确',cloudRows.get('u-1|'+SHEET).value.v.t,'第一版答卷');
+
+  /* ===== 2. 核心场景：浏览器清空本地数据后重新登录 ===== */
+  lines.push('\n2. 浏览器清空 localStorage 后能整份找回（核心场景）');
+  localStorage.clear();                       // 模拟浏览器自动清理
+  notified=[]; storageEvents=[];
+  eq('清理后本地确实是空的',localStorage.getItem(SCORE),null);
+  await window.cloudSync.sync(); await sleep(50);
+  eq('成绩记录找回',JSON.parse(localStorage.getItem(SCORE)).map(r=>r.id),['a']);
+  eq('答卷正文找回',JSON.parse(localStorage.getItem(SHEET)).t,'第一版答卷');
+  eq('云端没有被空数据覆盖',cloudRows.get('u-1|'+SCORE).value.v.length,1);
+  eq('派发了 storage 事件让成绩模块重读',storageEvents.indexOf('study-score-history.v1')>=0,true);
+  eq('通知了答题卡重载',notified.indexOf('compose')>=0,true);
+
+  /* ===== 3. 本地新增后自动推送 ===== */
+  lines.push('\n3. 本地新增会被推上去');
+  const cur=JSON.parse(localStorage.getItem(SCORE));
+  cur.push(rec('b','2026-09-10',88));
+  localStorage.setItem(SCORE,JSON.stringify(cur));
+  await window.cloudSync.sync(); await sleep(50);
+  eq('云端拿到两条',cloudRows.get('u-1|'+SCORE).value.v.map(r=>r.id).sort(),['a','b']);
+
+  /* ===== 4. 另一台设备删除，本设备同步后跟着删 ===== */
+  lines.push('\n4. 别的设备删掉的记录会同步下来');
+  cloudRows.set('u-1|'+SCORE,{key:SCORE,
+    value:{v:[rec('a','2026-09-01',60)],del:{'b':'2026-09-11T00:00:00.000Z'}},
+    updated_at:'2026-09-11T00:00:00.000Z'});
+  await window.cloudSync.sync(); await sleep(50);
+  eq('本地 b 被删掉',JSON.parse(localStorage.getItem(SCORE)).map(r=>r.id),['a']);
+
+  /* ===== 5. 本地删除会立墓碑并推上去，不会被云端复活 ===== */
+  lines.push('\n5. 本地删除不会被云端并集复活');
+  localStorage.setItem(SCORE,JSON.stringify([]));      // 本地删光
+  await window.cloudSync.sync(); await sleep(50);
+  eq('云端也清空了',cloudRows.get('u-1|'+SCORE).value.v.length,0);
+  eq('云端为 a 立了墓碑（b 的墓碑来自第 4 步，应一并保留）',
+     Object.keys(cloudRows.get('u-1|'+SCORE).value.del).sort(),['a','b']);
+  await window.cloudSync.sync(); await sleep(50);
+  eq('再同步一次也不会复活',JSON.parse(localStorage.getItem(SCORE)).length,0);
+
+  /* ===== 6. 计时记录靠指纹去重 ===== */
+  lines.push('\n6. 计时记录不会重复累积');
+  const s1={start:'09:00',end:'10:00',duration:3600};
+  localStorage.setItem(TIMER,JSON.stringify([s1]));
+  await window.cloudSync.sync(); await sleep(50);
+  await window.cloudSync.sync(); await sleep(50);
+  await window.cloudSync.sync(); await sleep(50);
+  eq('同步三次仍然只有一条',JSON.parse(localStorage.getItem(TIMER)).length,1);
+
+  /* ===== 7. 无改动时不产生多余上传 ===== */
+  lines.push('\n7. 没有改动时不重复上传');
+  netLog=[];
+  await window.cloudSync.sync(); await sleep(50);
+  eq('没有产生任何 UPSERT',netLog.filter(x=>x.indexOf('UPSERT')===0),[]);
+
+  /* ===== 8. 本地写入会触发防抖推送 ===== */
+  lines.push('\n8. 本地写入会自动排队推送');
+  netLog=[];
+  localStorage.setItem(SHEET,JSON.stringify({t:'改过的答卷',l:1200}));
+  await sleep(3600);    // 防抖 3 秒
+  eq('自动推送发生了',netLog.indexOf('SELECT')>=0,true);
+  eq('云端拿到新正文',cloudRows.get('u-1|'+SHEET).value.v.t,'改过的答卷');
+
+  /* ===== 9. 同步进行中的并发请求要合并重跑，不能被丢掉 ===== */
+  lines.push('\n9. 同步期间的改动不会被丢掉');
+  netLog=[];
+  const inflight=window.cloudSync.sync();          // 第一轮还在跑
+  localStorage.setItem(SHEET,JSON.stringify({t:'同步途中又改了',l:1200}));
+  await window.cloudSync.sync();                   // 这一次应该被记下并补跑
+  await inflight; await sleep(400);
+  eq('途中的改动最终推上去了',cloudRows.get('u-1|'+SHEET).value.v.t,'同步途中又改了');
+  eq('确实跑了不止一轮',netLog.filter(x=>x==='SELECT').length>=2,true);
+}
+</script>
+</body>
+</html>
