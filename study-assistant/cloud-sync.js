@@ -11,9 +11,13 @@
 (function(){
 'use strict';
 
-/* 必须用较新的版本：Supabase 已换成 sb_publishable_ 新版 key，
+/* SDK 优先从本仓库加载，jsDelivr 只作兜底。
+   放进仓库是为了去掉一个故障点：自带的话，SDK 的可用性就等于站点本身的可用性，
+   而 jsDelivr 在国内并不总是连得上 —— 连不上时整个同步都起不来。
+   必须是较新的版本：Supabase 已换成 sb_publishable_ 新版 key，
    老客户端（2.4x 那批）对新格式的支持没有保证。 */
-const SDK='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js';
+const SDK_LOCAL='vendor/supabase-js-2.116.0.js';
+const SDK_CDN='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js';
 const TABLE='study_state';
 const META_KEY='study-sync-meta.v1';
 const PUSH_DELAY=3000;          /* 本地改动后攒 3 秒再推，避免边打字边发请求 */
@@ -305,7 +309,9 @@ async function boot(){
     sb=cfg.client;          /* 注入现成客户端：供测试，也留给以后换别的后端 */
   }else{
     try{
-      await loadScript(SDK);
+      try{ await loadScript(SDK_LOCAL); }
+      catch(e){ await loadScript(SDK_CDN); }      /* 本地这份万一缺失，还能回退到 CDN */
+      if(!window.supabase||!window.supabase.createClient) throw new Error('SDK 未正确加载');
       sb=window.supabase.createClient(cfg.url,cfg.anonKey,{
         auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
       });
