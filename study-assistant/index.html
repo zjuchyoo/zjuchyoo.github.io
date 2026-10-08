@@ -911,6 +911,7 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
 #composeContainer{max-width:960px}
 #composeView{
   --cell:30px;--fs:21px;--gap:9px;
+  --pad-r:12px;   /* 格子右边线到粗红框的距离，行末出格的标点写在这里 */
   --rule:#c0302b;--grid:#d4564f;--ink:#1a1a1a;--paper-meta:#6b6f73;
   --kai:"FZKai-Z03S","方正楷体简体","方正楷体_GBK","FZKTJW",
         "LXGW WenKai","霞鹜文楷",
@@ -1014,7 +1015,7 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
 .sl-gridwrap::-webkit-scrollbar{height:8px}
 .sl-gridwrap::-webkit-scrollbar-track{background:transparent}
 .sl-gridwrap::-webkit-scrollbar-thumb{background:rgba(var(--primary-rgb),.2);border-radius:999px}
-.sl-frame{position:relative;border:2.5px solid var(--rule);padding:10px 12px;background:#fff}
+.sl-frame{position:relative;border:2.5px solid var(--rule);padding:10px var(--pad-r);background:#fff}
 .sl-grid{cursor:text}
 .sl-row{display:flex;position:relative;border:1px solid var(--grid);margin-bottom:var(--gap)}
 .sl-row:last-child{margin-bottom:0}
@@ -1032,6 +1033,13 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
 .sl-c .sl-g-p{width:.5em}                       /* 点号、后半标点：墨迹在左半个字身 */
 .sl-c .sl-g-open{text-indent:-.5em}             /* 前半标点：墨迹在右半个字身，左移半个 */
 .sl-c .is-mixed .sl-g-p{font-size:.6em}       /* 和汉字同格的标点小一号 */
+/* 行末出格的标点：从字的右边缘起，写进格子右边线到粗红框之间；放不下才缩字号，最小半个字号 */
+.sl-c.is-out{overflow:visible}
+.sl-c .sl-out{
+  position:absolute;left:calc(50% + var(--fs)/2);top:calc(50% - var(--fs)/2);height:var(--fs);
+  display:flex;align-items:flex-end;line-height:1;white-space:nowrap;pointer-events:none;
+  font-size:max(calc(var(--fs)*.5), min(var(--fs), calc(((var(--cell) - var(--fs))/2 + var(--pad-r) - 1px) * 2 / var(--n))));
+}
 .sl-c .sl-g-wide{width:1em;transform:scaleX(.5);transform-origin:left center}  /* ……/—— 只剩一格时压进一格 */
 .sl-c.is-over{background:#fbe9e8}
 .sl-c.is-caret::after{
@@ -1106,7 +1114,8 @@ body.sl-fullscreen .sl-sheet{border-radius:14px}
   #composeView{--cell:calc((100vw - 88px)/25);--fs:calc((100vw - 88px)/25*0.68);--gap:4px}
   .sl-gridwrap{padding:0}
   .sl-rnum{display:none}
-  .sl-frame{padding:6px 5px;border-width:2px}
+  #composeView{--pad-r:5px}
+  .sl-frame{padding:6px var(--pad-r);border-width:2px}
   .sl-limitline{left:-4px;right:-4px}
   .sl-limitline span{right:auto;left:0;top:-13px;font-size:10px}
   .sl-sheet{padding:16px 10px 20px}
@@ -7326,6 +7335,23 @@ function ensureGrid(minCells){
   grid.appendChild(frag);
 }
 
+/* 一组字排进一个 span：标点按半个字身，汉字一个字身，省略号、破折号压成一个字身。
+   有汉字时标点再小一号。总宽超过格子就整体缩字号，正好装进去。 */
+function glyphWrap(gs,wide){
+  const w=document.createElement('span'); w.className='sl-wrap';
+  const mixed=!wide && gs.some(g=>!isPunct(g));
+  if(mixed) w.classList.add('is-mixed');
+  let em=0;
+  gs.forEach((g,i)=>{
+    const sp=document.createElement('span'); sp.textContent=g;
+    if(i===0&&wide){ sp.className='sl-g sl-g-wide'; em+=1; }
+    else if(isPunct(g)){ sp.className='sl-g sl-g-p'+(LAYOUT.NO_TAIL.has(g)?' sl-g-open':''); em+=mixed?.3:.5; }
+    else{ sp.className='sl-g'; em+=1; }
+    w.appendChild(sp);
+  });
+  if(em>1) w.style.fontSize='min(var(--fs), calc(var(--cell) * '+(0.92/em).toFixed(3)+'))';
+  return w;
+}
 function paintCell(c,src){
   const sig = (!src||src.pad) ? '' :
     (src.half?'~':'') + (src.wide?'=':'') + src.s + (src.sq?'|'+src.sq.join(''):'');
@@ -7333,29 +7359,25 @@ function paintCell(c,src){
   c.dataset.sig=sig;
   c.className='sl-c'; c.textContent='';
   if(!sig) return;
+  const gs=[src.s].concat(src.sq||[]);
+  /* 行末格子里，字后面挤进来的标点出格写在右边线外（粗红框以内），不挤占字的位置。
+     inside = 到最后一个非标点字为止；全是标点的格子（。”）本来就装得下，照旧。 */
+  let k=gs.length;
+  if(!src.wide && (+c.dataset.i)%COLS===COLS-1){ while(k>0 && isPunct(gs[k-1])) k--; if(k===0) k=gs.length; }
+  const inside=gs.slice(0,k), outside=gs.slice(k);
   if(src.half){
     const sp=document.createElement('span'); sp.className='sl-half'; sp.textContent=src.s;
-    c.appendChild(sp); return;
+    c.appendChild(sp);
   }
-  if(!src.wide && !(src.sq && src.sq.length)){ c.textContent=src.s; return; }
-  /* 一格多字：标点按半个字身排，汉字一个字身；省略号、破折号压成一个字身。
-     有汉字的格子（好。” / “周）里标点再小一号，让汉字尽量保持原大。
-     总宽超过格子就整体缩字号，正好装进去。 */
-  c.classList.add('is-sq');
-  const w=document.createElement('span'); w.className='sl-wrap';
-  const gs=[src.s].concat(src.sq||[]);
-  const mixed=!src.wide && gs.some(g=>!isPunct(g));
-  if(mixed) w.classList.add('is-mixed');
-  let em=0;
-  gs.forEach((g,i)=>{
-    const sp=document.createElement('span'); sp.textContent=g;
-    if(i===0&&src.wide){ sp.className='sl-g sl-g-wide'; em+=1; }
-    else if(isPunct(g)){ sp.className='sl-g sl-g-p'+(LAYOUT.NO_TAIL.has(g)?' sl-g-open':''); em+=mixed?.3:.5; }
-    else{ sp.className='sl-g'; em+=1; }
-    w.appendChild(sp);
-  });
-  if(em>1) w.style.fontSize='min(var(--fs), calc(var(--cell) * '+(0.92/em).toFixed(3)+'))';
-  c.appendChild(w);
+  else if(inside.length===1 && !src.wide) c.textContent=src.s;
+  else{ c.classList.add('is-sq'); c.appendChild(glyphWrap(inside,src.wide)); }
+  if(outside.length){
+    c.classList.add('is-out');
+    const o=document.createElement('span'); o.className='sl-out';
+    o.style.setProperty('--n', outside.length);
+    outside.forEach(g=>{ const sp=document.createElement('span'); sp.className='sl-g sl-g-p'; sp.textContent=g; o.appendChild(sp); });
+    c.appendChild(o);
+  }
 }
 
 function render(){
