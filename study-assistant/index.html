@@ -1033,13 +1033,15 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
 .sl-c .sl-g-p{width:.5em}                       /* 点号、后半标点：墨迹在左半个字身 */
 .sl-c .sl-g-open{text-indent:-.5em}             /* 前半标点：墨迹在右半个字身，左移半个 */
 .sl-c .is-mixed .sl-g-p{font-size:.6em}       /* 和汉字同格的标点小一号 */
-/* 行末出格的标点：从字的右边缘起，写进格子右边线到粗红框之间；放不下才缩字号，最小半个字号 */
+/* 行末出格的标点：从字的右边缘起，按笔画宽度紧排，写进格子右边线到粗红框之间。
+   --w 是这组标点的总笔画宽（以字号为 1），放得下就用原字号，放不下才缩，最小半个字号 */
 .sl-c.is-out{overflow:visible}
 .sl-c .sl-out{
   position:absolute;left:calc(50% + var(--fs)/2);top:calc(50% - var(--fs)/2);height:var(--fs);
-  display:flex;align-items:flex-end;line-height:1;white-space:nowrap;pointer-events:none;
-  font-size:max(calc(var(--fs)*.5), min(var(--fs), calc(((var(--cell) - var(--fs))/2 + var(--pad-r) - 1px) * 2 / var(--n))));
+  line-height:1;white-space:nowrap;pointer-events:none;
+  font-size:max(calc(var(--fs)*.5), min(var(--fs), calc(((var(--cell) - var(--fs))/2 + var(--pad-r) - 1px) / var(--w))));
 }
+.sl-c .sl-out>span{position:absolute;bottom:0}
 .sl-c .sl-g-wide{width:1em;transform:scaleX(.5);transform-origin:left center}  /* ……/—— 只剩一格时压进一格 */
 .sl-c.is-over{background:#fbe9e8}
 .sl-c.is-caret::after{
@@ -7372,13 +7374,40 @@ function paintCell(c,src){
   else if(inside.length===1 && !src.wide) c.textContent=src.s;
   else{ c.classList.add('is-sq'); c.appendChild(glyphWrap(inside,src.wide)); }
   if(outside.length){
+    /* 按笔画实际宽度紧挨着排，不按半个字身算：楷体里“。”只占字身 0.12~0.38，
+       两个标点加起来约 0.7 个字身，原字号就放得进右边线外那条空白 */
     c.classList.add('is-out');
     const o=document.createElement('span'); o.className='sl-out';
-    o.style.setProperty('--n', outside.length);
-    outside.forEach(g=>{ const sp=document.createElement('span'); sp.className='sl-g sl-g-p'; sp.textContent=g; o.appendChild(sp); });
+    let x=OUT_GAP;
+    outside.forEach(g=>{
+      const m=ink(g,c), sp=document.createElement('span');
+      sp.textContent=g; sp.style.left=(x-m.l).toFixed(3)+'em';
+      o.appendChild(sp); x+=m.r-m.l+OUT_GAP;
+    });
+    o.style.setProperty('--w', (x-OUT_GAP).toFixed(3));
     c.appendChild(o);
   }
 }
+/* 量当前字体里标点笔画的左右边界（以字号为 1）。字体换了缓存跟着换 */
+const OUT_GAP=.03;
+const inkCx=document.createElement('canvas').getContext('2d'), inkCache=new Map();
+let inkFont='';
+function ink(ch,cell){
+  const fam=getComputedStyle(cell).fontFamily;
+  if(fam!==inkFont){ inkCache.clear(); inkFont=fam; }
+  let m=inkCache.get(ch);
+  if(!m){
+    inkCx.font='100px '+fam;
+    const t=inkCx.measureText(ch);
+    m={l:-t.actualBoundingBoxLeft/100, r:t.actualBoundingBoxRight/100};
+    if(!(m.r>m.l)) m={l:0, r:.5};      /* 量不到就按半个字身 */
+    inkCache.set(ch,m);
+  }
+  return m;
+}
+/* 字体加载完或换字体后，出格标点要按新字体重新量、重新画 */
+function repaintOut(){ inkCache.clear(); inkFont=''; grid.querySelectorAll('.is-out').forEach(c=>{ delete c.dataset.sig; }); }
+if(document.fonts){ document.fonts.addEventListener('loadingdone',()=>{ repaintOut(); render(); }); }
 
 function render(){
   const text=ta.value; const {out,posOf,uc}=build(text); ensureGrid(out.length);
@@ -7660,7 +7689,7 @@ window.composeReload=function(){
 
 /* 视图切过来时重排一次：隐藏状态下量到的矩形不能用 */
 window.composeRefresh=function(){
-  dirtyAll=true; overMark=-1;
+  dirtyAll=true; overMark=-1; repaintOut();
   syncBtns(); render();
   /* 视图隐藏期间窗口可能已经跨过断点；量格子要在 render 建好格子、且视图可见之后 */
   if(!hasSavedSize()) syncSizeInputs();
