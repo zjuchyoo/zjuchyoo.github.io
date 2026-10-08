@@ -1027,9 +1027,12 @@ body[data-theme="mint"] .idiom-mark-menu{background:linear-gradient(180deg,rgba(
 }
 .sl-c:last-of-type{border-right:none}
 .sl-c .sl-half{font-size:calc(var(--fs)*.67);letter-spacing:0;line-height:1;display:block}
-.sl-c.is-sq{justify-content:flex-start}
-.sl-c .sl-wrap{display:flex;align-items:baseline;white-space:nowrap;transform-origin:left center}
-.sl-c .sl-wrap .sl-p{font-size:calc(var(--fs)*.72);margin-left:-3px}
+.sl-c .sl-wrap{display:flex;align-items:baseline;white-space:nowrap;line-height:1}
+.sl-c .sl-g{flex:none}
+.sl-c .sl-g-p{width:.5em}                       /* 点号、后半标点：墨迹在左半个字身 */
+.sl-c .sl-g-open{text-indent:-.5em}             /* 前半标点：墨迹在右半个字身，左移半个 */
+.sl-c .is-mixed .sl-g-p{font-size:.6em}       /* 和汉字同格的标点小一号 */
+.sl-c .sl-g-wide{width:1em;transform:scaleX(.5);transform-origin:left center}  /* ……/—— 只剩一格时压进一格 */
 .sl-c.is-over{background:#fbe9e8}
 .sl-c.is-caret::after{
   content:"";position:absolute;top:3px;bottom:3px;width:2px;
@@ -1503,7 +1506,7 @@ body.sl-fullscreen .sl-sheet{border-radius:14px}
         </div>
         <p class="sl-foot">
           点格子开始写。回车换段，段首自己空两格。Ctrl+Z 撤销，Ctrl+Shift+Z 重做。<br>
-          字数＝占格字位数（挤压的标点照算一位）。半角字符两个占一格，空格一个占一格；句末标点不落行首，自动挤进上一行末格；前引号、前括号不落行末，自动推到下一行。
+          字数＝占格字位数（挤压的标点照算一位）。半角字符两个占一格，空格一个占一格；点号、后引号、后括号不落行首，挤进上一行末格；前引号、前括号不落行末，和后一个字合占末格；省略号、破折号不拆行；点号挨着引号合占一格。
         </p>
       </div>
     </main>
@@ -6576,6 +6579,7 @@ window.IDIOMS_DATA = [
   }
 ];
 </script>
+<script src="sheet-layout.js"></script>
 <script>
 /* ===== 公共工具函数 ===== */
 const _$=id=>document.getElementById(id);
@@ -7271,7 +7275,7 @@ resetBtn.addEventListener('click',async ()=>{
 
 /* =========================================
    申论答题卡 IIFE
-   排版引擎（build / paintCell / 避头尾规则 / 字数口径）与原答题卡完全一致，未作改动。
+   排版引擎在 sheet-layout.js；这里只管画格子、光标、存取。
    ========================================= */
 (function(){
 const view=document.getElementById('composeView');
@@ -7289,62 +7293,14 @@ const limIn=document.getElementById('slLimit'), qlimit=document.getElementById('
 const savedEl=document.getElementById('slSaved');
 
 let limit=1200, composing=false, cells=[], rows=[], totalRows=0;
-const HALF=c=>c>' '&&c<='~';   /* 空格不配对，独占一格 */
-
-/* 不能出现在行首（句末点号、后括号、后引号等） */
-const NO_HEAD=new Set([
-  '。','，','、','；','：','？','！','·','…','—','～',
-  '）','〕','〉','》','」','』','】','〗','］','｝',
-  '”','’','〞','%','‰','℃'
-]);
-/* 不能出现在行末（前括号、前引号） */
-const NO_TAIL=new Set([
-  '（','〔','〈','《','「','『','【','〖','［','｛',
-  '“','‘','〝','￥','＄','＃'
-]);
+/* 排版规则（避头尾、标点合格、省略号破折号、半角转全角、字数口径）都在 sheet-layout.js，
+   单独成文件是为了能脱离页面跑测试：node sheet-layout.test.js */
+const LAYOUT=window.SheetLayout, build=LAYOUT.build;
+/* 标点的字面只占半个字身：点号、后半标点的墨迹在左半，前半标点的墨迹在右半 */
+const isPunct=ch=>LAYOUT.NO_HEAD.has(ch)||LAYOUT.NO_TAIL.has(ch)||LAYOUT.QUOTE.has(ch);
 
 function limitText(){
   return limit>=1000 ? '总字数 '+(limit-200)+'—'+limit+' 字' : '不超过 '+limit+' 字';
-}
-
-function build(text){
-  const units=[]; let i=0;
-  while(i<text.length){
-    const ch=text[i];
-    if(ch==='\n'){ units.push({br:1, idxs:[i]}); i++; }
-    else if(HALF(ch)){
-      const idxs=[i]; let s=ch;
-      if(i+1<text.length&&HALF(text[i+1])){ s+=text[i+1]; idxs.push(i+1); i+=2; } else i++;
-      units.push({s, half:1, idxs});
-    }else{ units.push({s:ch, idxs:[i]}); i++; }
-  }
-  const out=[]; const posOf=new Array(text.length+1);
-  const col=()=>out.length%COLS;
-  let lastContent=false, justBroke=false;
-  for(const it of units){
-    if(it.br){
-      posOf[it.idxs[0]]=out.length;
-      if(out.length%COLS!==0){ while(out.length%COLS!==0) out.push({pad:1}); }
-      else if(!lastContent){ for(let k=0;k<COLS;k++) out.push({pad:1}); }
-      lastContent=false; justBroke=true;
-      continue;
-    }
-    if(!justBroke && col()===0 && out.length>0 && !it.half && NO_HEAD.has(it.s)){
-      const prev=out[out.length-1];
-      if(prev && !prev.pad && (prev.sq?prev.sq.length:0)<2){
-        prev.sq=prev.sq||[]; prev.sq.push(it.s);
-        it.idxs.forEach(x=>posOf[x]=out.length-1);
-        continue;
-      }
-    }
-    if(col()===COLS-1 && !it.half && NO_TAIL.has(it.s)) out.push({pad:1});
-    it.idxs.forEach(x=>posOf[x]=out.length);
-    out.push({s:it.s, half:it.half});
-    lastContent=true; justBroke=false;
-  }
-  posOf[text.length]=out.length;
-  let uc=0; for(const it of units) if(!it.br) uc++;
-  return {out,posOf,uc};
 }
 
 function rowsNeeded(){ return Math.ceil(limit*1.18/COLS)+2; }
@@ -7372,7 +7328,7 @@ function ensureGrid(minCells){
 
 function paintCell(c,src){
   const sig = (!src||src.pad) ? '' :
-    (src.half?'~':'') + src.s + (src.sq?'|'+src.sq.join(''):'');
+    (src.half?'~':'') + (src.wide?'=':'') + src.s + (src.sq?'|'+src.sq.join(''):'');
   if(c.dataset.sig===sig) return;
   c.dataset.sig=sig;
   c.className='sl-c'; c.textContent='';
@@ -7381,15 +7337,25 @@ function paintCell(c,src){
     const sp=document.createElement('span'); sp.className='sl-half'; sp.textContent=src.s;
     c.appendChild(sp); return;
   }
-  if(src.sq && src.sq.length){
-    c.classList.add('is-sq');
-    const w=document.createElement('span'); w.className='sl-wrap';
-    const m=document.createElement('span'); m.textContent=src.s; w.appendChild(m);
-    src.sq.forEach(p=>{ const s=document.createElement('span'); s.className='sl-p'; s.textContent=p; w.appendChild(s); });
-    if(src.sq.length>1) w.style.transform='scaleX(.8)';
-    c.appendChild(w); return;
-  }
-  c.textContent=src.s;
+  if(!src.wide && !(src.sq && src.sq.length)){ c.textContent=src.s; return; }
+  /* 一格多字：标点按半个字身排，汉字一个字身；省略号、破折号压成一个字身。
+     有汉字的格子（好。” / “周）里标点再小一号，让汉字尽量保持原大。
+     总宽超过格子就整体缩字号，正好装进去。 */
+  c.classList.add('is-sq');
+  const w=document.createElement('span'); w.className='sl-wrap';
+  const gs=[src.s].concat(src.sq||[]);
+  const mixed=!src.wide && gs.some(g=>!isPunct(g));
+  if(mixed) w.classList.add('is-mixed');
+  let em=0;
+  gs.forEach((g,i)=>{
+    const sp=document.createElement('span'); sp.textContent=g;
+    if(i===0&&src.wide){ sp.className='sl-g sl-g-wide'; em+=1; }
+    else if(isPunct(g)){ sp.className='sl-g sl-g-p'+(LAYOUT.NO_TAIL.has(g)?' sl-g-open':''); em+=mixed?.3:.5; }
+    else{ sp.className='sl-g'; em+=1; }
+    w.appendChild(sp);
+  });
+  if(em>1) w.style.fontSize='min(var(--fs), calc(var(--cell) * '+(0.92/em).toFixed(3)+'))';
+  c.appendChild(w);
 }
 
 function render(){
