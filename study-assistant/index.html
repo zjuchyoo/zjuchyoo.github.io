@@ -717,10 +717,10 @@ body.tm-exam-live #cloudPanel{visibility:hidden}
   border-bottom:2px solid rgba(var(--success-rgb),0.50);
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.44),0 6px 16px rgba(var(--shadow-rgb),0.04);
 }
-.score-table th:nth-child(1){width:150px}
-.score-table th:nth-child(2){width:300px}
-.score-table th:nth-child(3){width:160px}
-.score-table th:nth-child(4){width:170px}
+.score-table th:nth-child(1){width:170px}
+.score-table th:nth-child(2){width:140px}
+.score-table th:nth-child(3){width:140px}
+.score-table th:nth-child(4){width:150px}
 .score-table td{
   padding:10px 16px;border-bottom:1px solid rgba(var(--shadow-rgb),0.12);
   vertical-align:middle;font-size:14px;color:var(--text);line-height:1.4;
@@ -763,10 +763,10 @@ body.tm-exam-live #cloudPanel{visibility:hidden}
   .score-table{min-width:760px}
   .score-table th{padding:11px 12px;font-size:12px}
   .score-table td{padding:9px 12px;font-size:13px}
-  .score-table th:nth-child(1){width:140px}
-  .score-table th:nth-child(2){width:290px}
-  .score-table th:nth-child(3){width:155px}
-  .score-table th:nth-child(4){width:165px}
+  .score-table th:nth-child(1){width:150px}
+  .score-table th:nth-child(2){width:130px}
+  .score-table th:nth-child(3){width:130px}
+  .score-table th:nth-child(4){width:140px}
 }
 
 
@@ -1314,98 +1314,23 @@ body.sl-fullscreen .sl-sheet{border-radius:14px}
     <div class="header">
       <div class="brand">
         <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h17"/><path d="m7 15 3-4 3 2 5-7"/><path d="M18 6h2v2"/></svg></div>
-        <div class="brand-text"><h1>成绩估算</h1><p id="scoreSubTitle">浙江行测总分 / 100</p></div>
+        <div class="brand-text"><h1>成绩估算</h1><p id="scoreSubTitle">行测总分 / 100</p></div>
+      </div>
+      <div class="score-exam-tabs" role="tablist" aria-label="考试类型">
+        <button class="score-exam-tab" type="button" role="tab" data-exam-tab="guokao">国考</button>
+        <button class="score-exam-tab" type="button" role="tab" data-exam-tab="shengkao">省考</button>
       </div>
     </div>
     <div class="score-summary" aria-live="polite">
       <div class="score-dot"></div>
-      <div>已录入 <span id="scoreSummaryCorrect">0</span> / 120 题 · 估算 <span id="scoreSummaryPoints">0</span> / 100 分</div>
+      <div id="scoreSummaryText"></div>
     </div>
     <div class="score-main-content" id="scoreMainContent">
-      <div class="score-table-wrap">
-        <table class="score-table" aria-label="成绩估算表">
-          <thead>
-            <tr>
-              <th>大题型</th>
-              <th>小题型</th>
-              <th><span class="score-pair-heading"><span>正确题数</span><span class="score-divider">/</span><span>总题数</span></span></th>
-              <th><span class="score-pair-heading"><span>模块得分</span><span class="score-divider">/</span><span>模块总分</span></span></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="score-data-row" data-score-row data-section="politics" data-total="10" data-rate="0.65" data-max-score="6.5">
-              <td class="score-section-cell">政治理论</td>
-              <td class="score-subtype-cell">政治理论、时政政策</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="politics" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="政治理论正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">6.5</span></span></td>
-            </tr>
-            <tr class="score-data-row" data-score-row data-section="common" data-total="10" data-rate="0.65" data-max-score="6.5">
-              <td class="score-section-cell">常识判断</td>
-              <td class="score-subtype-cell">法律、经济、科技、人文等</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="commonSense" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="常识判断正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">6.5</span></span></td>
-            </tr>
-            <tr class="score-data-row" data-score-row data-section="language" data-total="25" data-rate="0.8" data-max-score="20">
-              <td class="score-section-cell">言语理解</td>
-              <td class="score-subtype-cell">逻辑填空、片段阅读、语句表达等</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="verbal" type="number" min="0" max="25" step="1" inputmode="numeric" autocomplete="off" aria-label="言语理解正确题数"><span class="score-divider">/</span><span class="score-fraction">25</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">20</span></span></td>
-            </tr>
-            <tr class="score-data-row" data-score-row data-section="quantity" data-total="20" data-rate="1" data-max-score="20">
-              <td class="score-section-cell">数量关系</td>
-              <td class="score-subtype-cell">数学运算</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="quantity" type="number" min="0" max="20" step="1" inputmode="numeric" autocomplete="off" aria-label="数量关系正确题数"><span class="score-divider">/</span><span class="score-fraction">20</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">20</span></span></td>
-            </tr>
-            <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.75" data-max-score="7.5">
-              <td class="score-section-cell">判断推理</td>
-              <td class="score-subtype-cell">图形推理</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="graphic" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="图形推理正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">7.5</span></span></td>
-            </tr>
-            <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.8" data-max-score="8">
-              <td class="score-section-cell"></td>
-              <td class="score-subtype-cell">定义判断</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="definition" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="定义判断正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">8</span></span></td>
-            </tr>
-            <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.75" data-max-score="7.5">
-              <td class="score-section-cell"></td>
-              <td class="score-subtype-cell">类比推理</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="analogy" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="类比推理正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">7.5</span></span></td>
-            </tr>
-            <tr class="score-data-row" data-score-row data-section="judgement" data-total="10" data-rate="0.9" data-max-score="9">
-              <td class="score-section-cell"></td>
-              <td class="score-subtype-cell">逻辑判断</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="logic" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" aria-label="逻辑判断正确题数"><span class="score-divider">/</span><span class="score-fraction">10</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">9</span></span></td>
-            </tr>
-            <tr class="score-subtotal-row" data-score-subtotal="judgement">
-              <td class="score-section-cell"></td>
-              <td class="score-subtype-cell">合计</td>
-              <td class="score-count-cell"><span class="score-pair"><output id="judgementCorrect" class="score-subtotal-output">0</output><span class="score-divider">/</span><span class="score-fraction">40</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output id="judgementScore" class="score-subtotal-output">0</output><span class="score-divider">/</span><span class="score-fraction">32</span></span></td>
-            </tr>
-            <tr class="score-data-row" data-score-row data-section="data" data-total="15" data-rate="1" data-max-score="15">
-              <td class="score-section-cell">资料分析</td>
-              <td class="score-subtype-cell">计算、比较、综合判断</td>
-              <td class="score-count-cell"><span class="score-pair"><input class="score-input" data-score-field="dataAnalysis" type="number" min="0" max="15" step="1" inputmode="numeric" autocomplete="off" aria-label="资料分析正确题数"><span class="score-divider">/</span><span class="score-fraction">15</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output class="score-earned">0</output><span class="score-divider">/</span><span class="score-fraction">15</span></span></td>
-            </tr>
-            <tr class="score-total-row">
-              <td class="score-section-cell">总分</td>
-              <td class="score-subtype-cell"></td>
-              <td class="score-count-cell"><span class="score-pair"><output id="scoreTotalCorrect" class="score-total-output">0</output><span class="score-divider">/</span><span class="score-fraction">120</span></span></td>
-              <td class="score-points-cell"><span class="score-pair"><output id="scoreTotalPoints" class="score-total-output">0</output><span class="score-divider">/</span><span class="score-fraction">100</span></span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <div id="scoreExamPanels"></div>
       <section class="score-save-panel" aria-labelledby="scoreSaveTitle">
         <div class="score-save-heading">
-          <div><h2 id="scoreSaveTitle">保存本次成绩</h2><p>完整填写九项正确题数后，可将当前估算保存为历史快照。</p></div>
-          <button class="score-clear-btn" id="scoreClearBtn" type="button">清空成绩估算</button>
+          <div><h2 id="scoreSaveTitle">保存本次成绩</h2><p>保存当前标签这一块；「对几题」留空的模块按估算计入。</p></div>
+          <button class="score-clear-btn" id="scoreClearBtn" type="button">清空对几题</button>
         </div>
         <div class="score-save-fields">
           <label class="score-form-field"><span>日期</span><input id="scoreDateInput" type="date" required></label>
@@ -1468,6 +1393,10 @@ body.sl-fullscreen .sl-sheet{border-radius:14px}
       <div class="brand">
         <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l4-4 3 2 5-7"/><circle cx="7" cy="15" r="1"/><circle cx="11" cy="11" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="19" cy="6" r="1"/></svg></div>
         <div class="brand-text"><h1>成绩记录</h1><p>回看每次练习，观察真实变化</p></div>
+      </div>
+      <div class="score-exam-tabs" role="tablist" aria-label="考试类型">
+        <button class="score-exam-tab" type="button" role="tab" data-exam-tab="guokao">国考</button>
+        <button class="score-exam-tab" type="button" role="tab" data-exam-tab="shengkao">省考</button>
       </div>
     </div>
     <main class="score-history-main">
@@ -7151,93 +7080,6 @@ if(initContainer){initContainer.classList.add('entering');setTimeout(()=>initCon
 })();
 
 /* =========================================
-   成绩估算 IIFE
-   ========================================= */
-(function(){
-const rows=[...document.querySelectorAll('[data-score-row]')];
-const judgementCorrect=document.getElementById('judgementCorrect');
-const judgementScore=document.getElementById('judgementScore');
-const totalCorrect=document.getElementById('scoreTotalCorrect');
-const totalPoints=document.getElementById('scoreTotalPoints');
-const summaryCorrect=document.getElementById('scoreSummaryCorrect');
-const summaryPoints=document.getElementById('scoreSummaryPoints');
-const topBarFill=document.getElementById('scoreTopBarFill');
-if(!rows.length||!judgementCorrect||!judgementScore||!totalCorrect||!totalPoints)return;
-
-function formatScore(value){
-  const rounded=Math.round((Number(value)+Number.EPSILON)*100)/100;
-  return rounded.toFixed(2).replace(/\.?0+$/,'');
-}
-
-function inspectInput(input){
-  const raw=input.value.trim();
-  if(raw==='')return {valid:false,empty:true,value:0};
-  const parsed=Number(raw),max=Number(input.max);
-  const valid=Number.isInteger(parsed)&&parsed>=0&&parsed<=max;
-  return {valid,empty:false,value:valid?parsed:0};
-}
-
-function calculateScore(values){
-  const total=rows.reduce((sum,row)=>{
-    const field=row.querySelector('.score-input').dataset.scoreField;
-    return sum+(Number(values[field])||0)*Number(row.dataset.rate);
-  },0);
-  return Math.round((total+Number.EPSILON)*100)/100;
-}
-
-function getSnapshot(){
-  const values={};let complete=true,hasInvalid=false;
-  rows.forEach(row=>{
-    const input=row.querySelector('.score-input');
-    const inspected=inspectInput(input);
-    input.classList.toggle('is-invalid',!inspected.empty&&!inspected.valid);
-    if(!inspected.valid){complete=false;if(!inspected.empty)hasInvalid=true;}
-    values[input.dataset.scoreField]=inspected.value;
-  });
-  return {values,complete,hasInvalid,totalScore:calculateScore(values)};
-}
-
-function updateScores(){
-  let allCorrect=0,allPoints=0,judgementQuestions=0,judgementPoints=0;
-  rows.forEach(row=>{
-    const input=row.querySelector('.score-input');
-    const inspected=inspectInput(input);
-    input.classList.toggle('is-invalid',!inspected.empty&&!inspected.valid);
-    const correct=inspected.value;
-    const points=correct*Number(row.dataset.rate);
-    row.querySelector('.score-earned').textContent=formatScore(points);
-    allCorrect+=correct;allPoints+=points;
-    if(row.dataset.section==='judgement'){
-      judgementQuestions+=correct;judgementPoints+=points;
-    }
-  });
-  judgementCorrect.textContent=String(judgementQuestions);
-  judgementScore.textContent=formatScore(judgementPoints);
-  totalCorrect.textContent=String(allCorrect);
-  totalPoints.textContent=formatScore(allPoints);
-  if(summaryCorrect)summaryCorrect.textContent=String(allCorrect);
-  if(summaryPoints)summaryPoints.textContent=formatScore(allPoints);
-  if(topBarFill)topBarFill.style.width=Math.min(100,Math.max(0,allPoints))+'%';
-}
-
-rows.forEach(row=>{
-  const input=row.querySelector('.score-input');
-  const onChange=()=>{updateScores();document.dispatchEvent(new CustomEvent('score-estimator-change'));};
-  input.addEventListener('input',onChange);
-  input.addEventListener('change',onChange);
-});
-
-updateScores();
-window.scoreEstimator={
-  calculateScore,
-  formatScore,
-  getSnapshot,
-  clear(){rows.forEach(row=>{const input=row.querySelector('.score-input');input.value='';input.classList.remove('is-invalid');});updateScores();document.dispatchEvent(new CustomEvent('score-estimator-change'));}
-};
-})();
-
-
-/* =========================================
    背成语 IIFE
    ========================================= */
 (function(){
@@ -7881,6 +7723,7 @@ syncBtns(); render();
 })();
 
 </script>
+<script src="score-config.js"></script>
 <script src="score-history.js"></script>
 <script src="cloud-config.js"></script>
 <script src="sync-merge.js"></script>
